@@ -79,7 +79,7 @@ dir.create(Norm_folder, showWarnings = FALSE, recursive = TRUE)
 dir.create(Counts_folder, showWarnings = FALSE, recursive = TRUE)
 dir.create(Quality_folder, showWarnings = FALSE, recursive = TRUE)
 
-# Read metadata file
+# Read metadata file (Sample.txt)
 cat("Reading metadata file...\n")
 MASTER_FILE <- read.delim(metadata_file, header=TRUE)
 
@@ -88,19 +88,12 @@ MASTER_FILE$SHORT_NAME <- gsub(" ","", paste0(MASTER_FILE$SHORT_NAME, "_", MASTE
 rownames(MASTER_FILE) <- MASTER_FILE$SHORT_NAME 
 samples <- as.character(MASTER_FILE$SHORT_NAME)
 
-# Create colData for DESeq2
-Group <- as.character(MASTER_FILE$strandedness)  # Using strandedness as grouping variable
+# Create colData for DESeq2 - only sample_name and Bio_replicates
 Bio_replicates <- as.character(MASTER_FILE$REPLICATE)
-id <- as.character(MASTER_FILE$SID)
-
-# Create conditions based on available metadata
-conditions <- gsub(" ","", paste0(as.character(MASTER_FILE$SID), "_", as.character(MASTER_FILE$strandedness)))
 
 colData <- data.frame(
+  sample_name = samples,
   Bio_replicates = Bio_replicates,
-  Group = Group,
-  id = id,
-  conditions = conditions,
   row.names = samples
 )
 
@@ -171,7 +164,7 @@ colData_test <- colData[samples,, drop=FALSE]
 matrix_test <- as.matrix(RAED_MAT[,rownames(colData_test)])
 
 # Create DESeq2 dataset
-dds_ex_test <- DESeqDataSetFromMatrix(countData = matrix_test, colData = colData_test, design = ~id)
+dds_ex_test <- DESeqDataSetFromMatrix(countData = matrix_test, colData = colData_test, design = ~Bio_replicates)
 dds_ex_test <- estimateSizeFactors(dds_ex_test)
 
 # Save normalization parameters
@@ -195,24 +188,24 @@ all.reads_t <- as.data.frame(log(all.reads[,samples]+1))
 all.reads_tt <- all.reads_t[,rownames(colData)] %>% rownames_to_column(var="gene") %>% as_tibble()            
 gathered_all.reads <- gather(all.reads_tt, key = "samplename", value = "normalized_counts", -gene)
 gathered_all.reads <- gathered_all.reads %>% 
-  left_join(colData %>% rownames_to_column("samplename") %>% dplyr::select(samplename, Group), by = c("samplename")) %>%
-  arrange(Group) %>% 
+  left_join(colData %>% rownames_to_column("samplename") %>% dplyr::select(samplename, Bio_replicates), by = c("samplename")) %>%
+  arrange(Bio_replicates) %>% 
   mutate(samplename = factor(samplename, levels = unique(samplename)))
 
 nm <- file.path(Norm_folder, "Read_Distribution", "Read_Distribution_Raw.pdf")
 pdf(nm, width=20, height=20)
 par(mfrow=c(1,3))
 
-p.1 <- ggplot(gathered_all.reads, aes(x = samplename, y = normalized_counts, fill = Group)) + 
+p.1 <- ggplot(gathered_all.reads, aes(x = samplename, y = normalized_counts, fill = Bio_replicates)) + 
   geom_boxplot(show.legend = FALSE) + xlab("") +
   ylab(expression(ln(count + 1))) + theme_bw() + 
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-p.2 <- ggplot(gathered_all.reads, aes(x = normalized_counts, colour = Group, fill = Group)) +
+p.2 <- ggplot(gathered_all.reads, aes(x = normalized_counts, colour = Bio_replicates, fill = Bio_replicates)) +
   geom_histogram(binwidth = 1) + xlab(expression(ln(count + 1))) + ylab("frequency") + 
   ylim(c(0,200000)) + theme(legend.position = "top") + theme_classic()
 
-p.3 <- ggplot(gathered_all.reads, aes(x = normalized_counts, colour = Group, fill = Group)) + 
+p.3 <- ggplot(gathered_all.reads, aes(x = normalized_counts, colour = Bio_replicates, fill = Bio_replicates)) + 
   geom_density(alpha = 0.2, size = 1.25) + xlab(expression(ln(count))) + ylim(c(0, 0.5)) +
   theme(legend.position = "top") + theme_classic()
 
@@ -226,24 +219,24 @@ all.reads_z <- as.data.frame(log(all.reads_d[,samples]+1))
 all.reads_zz <- all.reads_z[,rownames(colData)] %>% rownames_to_column(var="gene") %>% as_tibble()            
 gathered_all.reads <- gather(all.reads_zz, key = "samplename", value = "normalized_counts", -gene)
 gathered_all.reads <- gathered_all.reads %>% 
-  left_join(colData %>% rownames_to_column("samplename") %>% dplyr::select(samplename, Group), by = c("samplename")) %>%
-  arrange(Group) %>% 
+  left_join(colData %>% rownames_to_column("samplename") %>% dplyr::select(samplename, Bio_replicates), by = c("samplename")) %>%
+  arrange(Bio_replicates) %>% 
   mutate(samplename = factor(samplename, levels = unique(samplename)))
 
 nm <- file.path(Norm_folder, "Read_Distribution", "Read_Distribution_Norm_Filt.pdf")
 pdf(nm, width=10, height=10)
 par(mfrow=c(1,3))
 
-p.1 <- ggplot(gathered_all.reads, aes(x = samplename, y = normalized_counts, fill = Group)) + 
+p.1 <- ggplot(gathered_all.reads, aes(x = samplename, y = normalized_counts, fill = Bio_replicates)) + 
   geom_boxplot(show.legend = FALSE) + xlab("") +
   ylab(expression(ln(count + 1))) + theme_bw() + 
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-p.2 <- ggplot(gathered_all.reads, aes(x = normalized_counts, colour = Group, fill = Group)) +
+p.2 <- ggplot(gathered_all.reads, aes(x = normalized_counts, colour = Bio_replicates, fill = Bio_replicates)) +
   geom_histogram(binwidth = 1) + xlab(expression(ln(count + 1))) + ylab("frequency") + 
   ylim(c(0,200000)) + theme(legend.position = "top") + theme_classic()
 
-p.3 <- ggplot(gathered_all.reads, aes(x = normalized_counts, colour = Group, fill = Group)) + 
+p.3 <- ggplot(gathered_all.reads, aes(x = normalized_counts, colour = Bio_replicates, fill = Bio_replicates)) + 
   geom_density(alpha = 0.2, size = 1.25) + xlab(expression(ln(count))) + ylim(c(0, 0.5)) +
   theme(legend.position = "top") + theme_classic()
 
@@ -264,11 +257,10 @@ rlog <- cbind(all_name, as.data.frame(assay(vsd)))
 write.table(rlog, file=file.path(Counts_folder, "rLog_reads.txt"), sep="\t", col.names=NA)
 
 # Create annotation for heatmaps
-annot_c <- as.data.frame(matrix(NA, nrow=length(rownames(colData)), ncol=2))
+annot_c <- as.data.frame(matrix(NA, nrow=length(rownames(colData)), ncol=1))
 rownames(annot_c) <- rownames(colData)
-colnames(annot_c) <- c("ID", "Group")
-annot_c$ID <- colData$id
-annot_c$Group <- colData$Group
+colnames(annot_c) <- c("Bio_replicates")
+annot_c$Bio_replicates <- colData$Bio_replicates
 
 # Sample-to-sample distances
 cat("Creating sample distance heatmaps...\n")
@@ -317,10 +309,10 @@ dev.off()
 
 # PCA analysis
 cat("Performing PCA analysis...\n")
-pcaData <- plotPCA(vsd, intgroup = c("conditions", "Group", "Bio_replicates"), ntop = nrow(matrix_test), returnData=TRUE)
+pcaData <- plotPCA(vsd, intgroup = c("Bio_replicates"), ntop = nrow(matrix_test), returnData=TRUE)
 percentVar <- round(100*attr(pcaData,"percentVar"))
 
-gg <- ggplot(pcaData, aes(PC1, PC2, color=Group, label=rownames(colData_test))) +
+gg <- ggplot(pcaData, aes(PC1, PC2, color=Bio_replicates, label=name)) +
   geom_text_repel() +
   geom_point(size=3) +
   xlab(paste0("PC1: ", percentVar[1], "% variance")) +
@@ -333,7 +325,7 @@ ggsave("PCA_rlogTransformedID.pdf", plot = gg, device="pdf", useDingbats=FALSE,
 
 # Extended PCA analysis
 ntop = nrow(assay(vsd))
-intgroup = c("conditions", "Group", "Bio_replicates", "id")
+intgroup = c("Bio_replicates")
 rv <- rowVars(assay(vsd))
 select <- order(rv, decreasing = TRUE)[seq_len(min(ntop, length(rv)))]
 centered_scaled <- scale(t(assay(vsd[select,])), center=TRUE, scale=FALSE)
@@ -350,17 +342,13 @@ dev.off()
 
 # 3D PCA plots
 tryCatch({
-  p <- plot_ly(d, x = ~PC1, y = ~PC2, z = ~PC3, color = ~Group, colors = "Set1", 
+  p <- plot_ly(d, x = ~PC1, y = ~PC2, z = ~PC3, color = ~Bio_replicates, colors = "Set1", 
                marker = list(size=10, opacity=0.5))
-  saveWidget(p, file=file.path(Quality_folder, "3D_PCA_Group.html"), selfcontained=FALSE)
+  saveWidget(p, file=file.path(Quality_folder, "3D_PCA_Bio_replicates.html"), selfcontained=FALSE)
   
-  p <- plot_ly(d, x = ~PC1, y = ~PC2, z = ~PC3, color = ~rownames(colData_test), colors = "Set1", 
+  p <- plot_ly(d, x = ~PC1, y = ~PC2, z = ~PC3, color = ~name, colors = "Set1", 
                marker = list(size=10, opacity=0.5))
   saveWidget(p, file=file.path(Quality_folder, "3D_PCA_Samples.html"), selfcontained=FALSE)
-  
-  p <- plot_ly(d, x = ~PC1, y = ~PC2, z = ~PC3, color = ~id, colors = "Gray", 
-               marker = list(size=10, opacity=0.5))
-  saveWidget(p, file=file.path(Quality_folder, "3D_PCA_ID.html"), selfcontained=FALSE)
 }, error = function(e) {
   cat("Warning: Could not create 3D PCA plots:", e$message, "\n")
 })

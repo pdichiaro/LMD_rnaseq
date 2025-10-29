@@ -1,3 +1,0 @@
-SID	SHORT_NAME	REPLICATE	RID	strandedness	FASTQ_FOLDER
-LMD_1	test_sample_A	R1	S001	reverse	/sandbox/LMD_rnaseq/test_data/fastq/Sample_S001_LMD_1
-LMD_2	test_sample_B	R2	S002	reverse	/sandbox/LMD_rnaseq/test_data/fastq/Sample_S002_LMD_2

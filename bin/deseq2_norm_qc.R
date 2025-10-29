@@ -1,0 +1,375 @@
+#!/usr/bin/env Rscript
+
+#
+# Created by Pierluigi Di Chiaro
+# DESeq2 Normalization and Quality Control Script
+#
+
+library("optparse")
+
+option_list = list(
+  make_option(c("-i", "--input"), type="character", default=NULL,
+              help="Input gene expression matrix (EX_reads_RAW.txt)", metavar="character"),
+  make_option(c("-m", "--metadata"), type="character", default=NULL,
+              help="Sample metadata file (Sample.txt)", metavar="character"),
+  make_option(c("-o", "--outdir"), type="character", default="./",
+              help="Output directory", metavar="character"),
+  make_option(c("--min_reads"), type="integer", default=10,
+              help="Minimum read count threshold [default %default]", metavar="integer")
+)
+
+optparser = OptionParser(option_list=option_list);
+opt = parse_args(optparser)
+
+if (is.null(opt$input)) {
+  print_help(optparser)
+  stop("Input gene expression matrix must be supplied", call.=FALSE)
+}
+if (is.null(opt$metadata)) {
+  print_help(optparser)
+  stop("Sample metadata file must be supplied", call.=FALSE)
+}
+
+# Load required libraries
+suppressPackageStartupMessages({
+  library("tidyverse")
+  library("Rfast")
+  library("DESeq2")
+  library("Biobase")
+  library("RColorBrewer")
+  library("factoextra")
+  library("gplots")
+  library("ggrepel")
+  library("pheatmap")
+  library("PoiClaClu")
+  library("scatterplot3d")
+  library("plotly")
+  library("htmlwidgets")
+  library("corrplot")
+  library("fitdistrplus")
+  library("FNN")
+  library("igraph")
+  library("dendsort")
+  library("viridis")
+  library("uwot")
+})
+
+# Set parameters
+input_file <- opt$input
+metadata_file <- opt$metadata
+output_dir <- opt$outdir
+min_reads <- opt$min_reads
+
+# Hardcoded gene types to filter
+gene_types <- c("protein_coding", "protein-coding", "protein-coding gene")
+
+cat("Starting DESeq2 normalization and QC analysis...\n")
+cat("Input file:", input_file, "\n")
+cat("Metadata file:", metadata_file, "\n")
+cat("Output directory:", output_dir, "\n")
+cat("Minimum reads threshold:", min_reads, "\n")
+cat("Gene types to keep:", paste(gene_types, collapse=", "), "\n")
+
+# Create output directories
+Norm_folder <- file.path(output_dir, "6_Norm_folder")
+Counts_folder <- file.path(output_dir, "7_Counts_folder")
+Quality_folder <- file.path(output_dir, "8_Quality_folder")
+
+dir.create(Norm_folder, showWarnings = FALSE, recursive = TRUE)
+dir.create(Counts_folder, showWarnings = FALSE, recursive = TRUE)
+dir.create(Quality_folder, showWarnings = FALSE, recursive = TRUE)
+
+# Read metadata file
+cat("Reading metadata file...\n")
+MASTER_FILE <- read.delim(metadata_file, header=TRUE)
+
+# Process sample names
+MASTER_FILE$SHORT_NAME <- gsub(" ","", paste0(MASTER_FILE$SHORT_NAME, "_", MASTER_FILE$REPLICATE))
+rownames(MASTER_FILE) <- MASTER_FILE$SHORT_NAME 
+samples <- as.character(MASTER_FILE$SHORT_NAME)
+
+# Create colData for DESeq2
+Group <- as.character(MASTER_FILE$strandedness)  # Using strandedness as grouping variable
+Bio_replicates <- as.character(MASTER_FILE$REPLICATE)
+id <- as.character(MASTER_FILE$SID)
+
+# Create conditions based on available metadata
+conditions <- gsub(" ","", paste0(as.character(MASTER_FILE$SID), "_", as.character(MASTER_FILE$strandedness)))
+
+colData <- data.frame(
+  Bio_replicates = Bio_replicates,
+  Group = Group,
+  id = id,
+  conditions = conditions,
+  row.names = samples
+)
+
+cat("Sample information:\n")
+print(colData)
+
+# Read gene expression matrix
+cat("Reading gene expression matrix:", input_file, "\n")
+all.reads <- read.delim(file=input_file, sep="\t", row.names=1, check.names=FALSE)
+colnames(all.reads) <- gsub("^X","", colnames(all.reads))
+
+# Extract annotation columns (first 15 columns contain gene information)
+all_name <- all.reads[,1:15]
+count_data <- all.reads[, samples, drop=FALSE]
+count_data <- round(count_data)
+
+# Combine annotation with counts
+all.reads <- cbind(all_name, count_data)
+
+# Save integer counts
+write.table(all.reads, file=file.path(Counts_folder, "EX_reads_RAW_integer.txt"), sep="\t", col.names=NA)
+
+# Filter by gene type
+cat("Filtering genes by type...\n")
+cat("Available gene types:", unique(all.reads$type_of_gene), "\n")
+
+ww <- which(all.reads$type_of_gene %in% gene_types)
+if(length(ww) == 0) {
+  cat("Warning: No genes found with specified types. Using all genes.\n")
+  ww <- 1:nrow(all.reads)
+}
+all.reads <- all.reads[ww,]
+
+cat("Genes after type filtering:", nrow(all.reads), "\n")
+
+# No need to create ALL subdirectory - files will go directly to Counts_folder
+
+# Filter low-expressed genes
+cat("Filtering low-expressed genes...\n")
+all.reads_c <- all.reads
+rownames(all.reads_c) <- all.reads$Symbol
+
+# Create binary matrix for filtering
+Rep_counts_all <- as.data.frame(matrix(0, nrow=nrow(all.reads_c), ncol=length(samples)))
+colnames(Rep_counts_all) <- samples
+rownames(Rep_counts_all) <- rownames(all.reads_c)
+
+for(c in colnames(Rep_counts_all)){
+  w <- which(all.reads_c[,c] > min_reads)
+  Rep_counts_all[w,c] <- 1
+}
+
+# Filter genes that have sufficient expression in at least half of samples
+keep_genes <- rowSums(Rep_counts_all) >= round(length(samples)/2)
+all.reads_c <- all.reads_c[keep_genes,]
+rownames(all.reads_c) <- NULL
+all_name <- all.reads_c[,1:15]
+
+cat("Genes after expression filtering:", nrow(all.reads_c), "\n")
+
+# Save filtered counts
+write.table(all.reads_c, file=file.path(Counts_folder, "EX_reads_RAW_filt.txt"), sep="\t", col.names=NA)
+
+# Prepare data for DESeq2
+cat("Running DESeq2 normalization...\n")
+RAED_MAT <- all.reads_c
+colData_test <- colData[samples,, drop=FALSE]
+matrix_test <- as.matrix(RAED_MAT[,rownames(colData_test)])
+
+# Create DESeq2 dataset
+dds_ex_test <- DESeqDataSetFromMatrix(countData = matrix_test, colData = colData_test, design = ~id)
+dds_ex_test <- estimateSizeFactors(dds_ex_test)
+
+# Save normalization parameters
+size <- as.data.frame(sizeFactors(dds_ex_test))                                      
+colnames(size) <- "Depth"
+write.table(size, file=file.path(Counts_folder, "Normalisation_Parameters.txt"), sep="\t", col.names=NA)
+
+# Get normalized counts
+all.reads_d <- as.data.frame(counts(dds_ex_test, normalized = TRUE)) 
+all.reads_d <- cbind(all_name, all.reads_d)
+
+# Save normalized counts
+write.table(all.reads_d, file=file.path(Counts_folder, "EX_reads_NORM_filt.txt"), sep="\t", col.names=NA)
+
+# Create normalization output directories
+dir.create(file.path(Norm_folder, "Read_Distribution"), showWarnings = FALSE, recursive = TRUE)
+
+# Plot read distribution - Raw data
+cat("Creating read distribution plots...\n")
+all.reads_t <- as.data.frame(log(all.reads[,samples]+1))
+all.reads_tt <- all.reads_t[,rownames(colData)] %>% rownames_to_column(var="gene") %>% as_tibble()            
+gathered_all.reads <- gather(all.reads_tt, key = "samplename", value = "normalized_counts", -gene)
+gathered_all.reads <- gathered_all.reads %>% 
+  left_join(colData %>% rownames_to_column("samplename") %>% dplyr::select(samplename, Group), by = c("samplename")) %>%
+  arrange(Group) %>% 
+  mutate(samplename = factor(samplename, levels = unique(samplename)))
+
+nm <- file.path(Norm_folder, "Read_Distribution", "Read_Distribution_Raw.pdf")
+pdf(nm, width=20, height=20)
+par(mfrow=c(1,3))
+
+p.1 <- ggplot(gathered_all.reads, aes(x = samplename, y = normalized_counts, fill = Group)) + 
+  geom_boxplot(show.legend = FALSE) + xlab("") +
+  ylab(expression(ln(count + 1))) + theme_bw() + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+p.2 <- ggplot(gathered_all.reads, aes(x = normalized_counts, colour = Group, fill = Group)) +
+  geom_histogram(binwidth = 1) + xlab(expression(ln(count + 1))) + ylab("frequency") + 
+  ylim(c(0,200000)) + theme(legend.position = "top") + theme_classic()
+
+p.3 <- ggplot(gathered_all.reads, aes(x = normalized_counts, colour = Group, fill = Group)) + 
+  geom_density(alpha = 0.2, size = 1.25) + xlab(expression(ln(count))) + ylim(c(0, 0.5)) +
+  theme(legend.position = "top") + theme_classic()
+
+print(p.1)
+print(p.2)
+print(p.3)
+dev.off()
+
+# Plot read distribution - Normalized data
+all.reads_z <- as.data.frame(log(all.reads_d[,samples]+1))
+all.reads_zz <- all.reads_z[,rownames(colData)] %>% rownames_to_column(var="gene") %>% as_tibble()            
+gathered_all.reads <- gather(all.reads_zz, key = "samplename", value = "normalized_counts", -gene)
+gathered_all.reads <- gathered_all.reads %>% 
+  left_join(colData %>% rownames_to_column("samplename") %>% dplyr::select(samplename, Group), by = c("samplename")) %>%
+  arrange(Group) %>% 
+  mutate(samplename = factor(samplename, levels = unique(samplename)))
+
+nm <- file.path(Norm_folder, "Read_Distribution", "Read_Distribution_Norm_Filt.pdf")
+pdf(nm, width=10, height=10)
+par(mfrow=c(1,3))
+
+p.1 <- ggplot(gathered_all.reads, aes(x = samplename, y = normalized_counts, fill = Group)) + 
+  geom_boxplot(show.legend = FALSE) + xlab("") +
+  ylab(expression(ln(count + 1))) + theme_bw() + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+p.2 <- ggplot(gathered_all.reads, aes(x = normalized_counts, colour = Group, fill = Group)) +
+  geom_histogram(binwidth = 1) + xlab(expression(ln(count + 1))) + ylab("frequency") + 
+  ylim(c(0,200000)) + theme(legend.position = "top") + theme_classic()
+
+p.3 <- ggplot(gathered_all.reads, aes(x = normalized_counts, colour = Group, fill = Group)) + 
+  geom_density(alpha = 0.2, size = 1.25) + xlab(expression(ln(count))) + ylim(c(0, 0.5)) +
+  theme(legend.position = "top") + theme_classic()
+
+print(p.1)
+print(p.2)
+print(p.3)
+dev.off()
+
+# Quality control analysis
+cat("Performing quality control analysis...\n")
+dir.create(Quality_folder, showWarnings = FALSE, recursive = TRUE)
+
+# Variance stabilizing transformation
+vsd <- vst(dds_ex_test, blind = TRUE)
+
+# Save rlog transformed data
+rlog <- cbind(all_name, as.data.frame(assay(vsd)))
+write.table(rlog, file=file.path(Counts_folder, "rLog_reads.txt"), sep="\t", col.names=NA)
+
+# Create annotation for heatmaps
+annot_c <- as.data.frame(matrix(NA, nrow=length(rownames(colData)), ncol=2))
+rownames(annot_c) <- rownames(colData)
+colnames(annot_c) <- c("ID", "Group")
+annot_c$ID <- colData$id
+annot_c$Group <- colData$Group
+
+# Sample-to-sample distances
+cat("Creating sample distance heatmaps...\n")
+sampleDists <- dist(t(assay(vsd)))
+sampleDistMatrix <- as.matrix(sampleDists, labels=TRUE)
+colnames(sampleDistMatrix) <- NULL
+colors <- colorRampPalette(rev(brewer.pal(9, "Blues")))(255)
+
+pdf(file.path(Quality_folder, "Heatmap_sampleTosample_distances_vstTransformed.pdf"))
+pheatmap(sampleDistMatrix,
+         clustering_distance_rows = sampleDists,
+         clustering_distance_cols = sampleDists,
+         fontsize_row=6,
+         fontsize_col=6,
+         border_color = FALSE,
+         col = colors)
+dev.off()
+
+# Poisson distance
+poisd <- PoissonDistance(t(counts(dds_ex_test)))
+samplePoisDistMatrix <- as.matrix(poisd$dd, labels=TRUE)
+rownames(samplePoisDistMatrix) <- colnames(counts(dds_ex_test))[as.numeric(rownames(samplePoisDistMatrix))]
+colnames(samplePoisDistMatrix) <- NULL
+
+pdf(file.path(Quality_folder, "Heatmap_Poisson_Distance.pdf"))
+pheatmap(samplePoisDistMatrix,
+         clustering_distance_rows = poisd$dd,
+         clustering_distance_cols = poisd$dd,
+         fontsize_row=6,
+         fontsize_col=6,
+         border_color = FALSE,
+         col = colors)
+dev.off()
+
+# Correlation heatmap
+Pearson.corr <- cor(assay(vsd), method="pearson")  
+pdf(file.path(Quality_folder, "Heatmap_sampleTosample_correlation.pdf"), height=10, width=10)
+pheatmap(Pearson.corr,
+         annotation_col = annot_c,
+         fontsize = 6,
+         fontsize_row=6,
+         fontsize_col=6,
+         border_color = FALSE,
+         col=rev(brewer.pal(8, "RdBu")))                                      
+dev.off()
+
+# PCA analysis
+cat("Performing PCA analysis...\n")
+pcaData <- plotPCA(vsd, intgroup = c("conditions", "Group", "Bio_replicates"), ntop = nrow(matrix_test), returnData=TRUE)
+percentVar <- round(100*attr(pcaData,"percentVar"))
+
+gg <- ggplot(pcaData, aes(PC1, PC2, color=Group, label=rownames(colData_test))) +
+  geom_text_repel() +
+  geom_point(size=3) +
+  xlab(paste0("PC1: ", percentVar[1], "% variance")) +
+  ylab(paste0("PC2: ", percentVar[2], "% variance")) +
+  coord_fixed() +
+  theme_classic()
+
+ggsave("PCA_rlogTransformedID.pdf", plot = gg, device="pdf", useDingbats=FALSE, 
+       width=10, height=10, path=Quality_folder, limitsize = FALSE)
+
+# Extended PCA analysis
+ntop = nrow(assay(vsd))
+intgroup = c("conditions", "Group", "Bio_replicates", "id")
+rv <- rowVars(assay(vsd))
+select <- order(rv, decreasing = TRUE)[seq_len(min(ntop, length(rv)))]
+centered_scaled <- scale(t(assay(vsd[select,])), center=TRUE, scale=FALSE)
+pca <- prcomp(centered_scaled, scale. = FALSE) 
+percentVar <- round(100*(pca$sdev^2/sum(pca$sdev^2)))
+intgroup.df <- as.data.frame(colData(vsd)[, intgroup, drop = FALSE])
+d <- data.frame(pca$x, intgroup.df, name = colnames(vsd))
+attr(d, "percentVar") <- percentVar[1:2]
+
+# Plot variance explained
+pdf(file.path(Quality_folder, "Percent_var_PCA.pdf"))
+barplot(percentVar, ylim=c(0,100))
+dev.off()
+
+# 3D PCA plots
+tryCatch({
+  p <- plot_ly(d, x = ~PC1, y = ~PC2, z = ~PC3, color = ~Group, colors = "Set1", 
+               marker = list(size=10, opacity=0.5))
+  saveWidget(p, file=file.path(Quality_folder, "3D_PCA_Group.html"), selfcontained=FALSE)
+  
+  p <- plot_ly(d, x = ~PC1, y = ~PC2, z = ~PC3, color = ~rownames(colData_test), colors = "Set1", 
+               marker = list(size=10, opacity=0.5))
+  saveWidget(p, file=file.path(Quality_folder, "3D_PCA_Samples.html"), selfcontained=FALSE)
+  
+  p <- plot_ly(d, x = ~PC1, y = ~PC2, z = ~PC3, color = ~id, colors = "Gray", 
+               marker = list(size=10, opacity=0.5))
+  saveWidget(p, file=file.path(Quality_folder, "3D_PCA_ID.html"), selfcontained=FALSE)
+}, error = function(e) {
+  cat("Warning: Could not create 3D PCA plots:", e$message, "\n")
+})
+
+# PCA correlation plot
+pdf(file.path(Quality_folder, "All_pca.pdf"))
+corrplot(as.matrix(d[,1:min(ncol(d), 10)]), is.corr=FALSE, tl.cex = 0.7, cl.cex = 0.4, 
+         rect.lwd = 0.1, cl.pos = "b")
+dev.off() 
+
+cat("DESeq2 normalization and QC analysis completed successfully!\n")
+cat("Output files saved to:", output_dir, "\n")

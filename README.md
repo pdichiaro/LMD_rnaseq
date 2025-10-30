@@ -3,6 +3,7 @@
 The pipeline implements the comprehensive methodology described in:
 
 > **Di Chiaro P, et al.** "Mapping functional to morphological variation reveals the basis of regional extracellular matrix subversion and nerve invasion in pancreatic cancer." *Cancer Cell* 2024.
+
 > **Di Chiaro P, et al.** "A framework to mine laser microdissection-based omics data and uncover regulators of pancreatic cancer heterogeneity." *Gigascience* 2025.
 
 This work demonstrates the application of LMD-RNAseq for spatially resolved transcriptomic analysis, providing insights into tumor heterogeneity and the tumor microenvironment.
@@ -25,6 +26,7 @@ DESeq2 Normalization & QC
     ↓
 Comprehensive Reporting (MultiQC)
 ```
+
 
 
 

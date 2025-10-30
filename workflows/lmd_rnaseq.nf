@@ -76,11 +76,7 @@ workflow RNASEQ {
         .splitCsv(header:true, sep:'\t')
         .map { row ->
             def fastq_dir = file(row.FASTQ_FOLDER)
-            def fastq_files = fastq_dir.listFiles().findAll { it.name.endsWith('.fastq.gz') }
             def is_single_end = params.seq_mode == 'SE'
-
-            def r1_files = fastq_files.findAll { it.name.contains('_R1_') }
-            def r2_files = fastq_files.findAll { it.name.contains('_R2_') }
 
             def meta = [
                 //id: row.SID,
@@ -91,9 +87,33 @@ workflow RNASEQ {
                 strandedness: row.strandedness
             ]
 
-            def files = is_single_end ? r1_files : r1_files + r2_files
+            // Create file objects and handle file discovery robustly
+            def files = []
+            
+            // Try to find files in the directory
+            if (fastq_dir.exists() && fastq_dir.isDirectory()) {
+                def all_files = fastq_dir.listFiles()?.findAll { it.name.endsWith('.fastq.gz') } ?: []
+                def r1_files = all_files.findAll { it.name.contains('_R1_') }
+                def r2_files = all_files.findAll { it.name.contains('_R2_') }
+                
+                if (is_single_end && r1_files) {
+                    files = r1_files
+                } else if (!is_single_end && r1_files && r2_files) {
+                    files = r1_files + r2_files
+                } else if (!is_single_end && r1_files) {
+                    // PE mode but only R1 found, use R1 only
+                    files = r1_files
+                }
+            }
+            
+            // Skip this sample if no valid files found
+            if (!files || files.isEmpty()) {
+                return null
+            }
+            
             [ meta, files ]
         }
+        .filter { it != null }
 
 
     // -----------------------
@@ -185,9 +205,14 @@ workflow RNASEQ {
 
         ch_name_replacements = ch_input
             .map{ meta, reads ->
+                // Add null safety for reads
+                if (!reads || reads.isEmpty() || reads[0] == null) {
+                    return []
+                }
+                
                 def name1 = file(reads[0]).simpleName + "\t" + meta.id + '_1'
                 def fastqcnames = meta.id + "_raw\t" + meta.id + "\n" + meta.id + "_trimmed\t" + meta.id
-                if (reads.size() > 1 && !meta.single_end){
+                if (reads.size() > 1 && !meta.single_end && reads[1] != null){
                     def name2 = file(reads[1]).simpleName + "\t" + meta.id + '_2'
                     def fastqcnames1 = meta.id + "_raw_1\t" + meta.id + "_1\n" + meta.id + "_trimmed_1\t" + meta.id + "_1"
                     def fastqcnames2 = meta.id + "_raw_2\t" + meta.id + "_2\n" + meta.id + "_trimmed_2\t" + meta.id + "_2"
@@ -197,6 +222,7 @@ workflow RNASEQ {
                 }
             }
             .flatten()
+            .filter { it != null && it != [] }
             .collectFile(name: 'name_replacement.txt', newLine: true)
 
         MULTIQC (

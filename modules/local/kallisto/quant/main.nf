@@ -33,6 +33,7 @@ process KALLISTO_QUANT {
     def chromosomes_input = chromosomes ? "--chromosomes ${chromosomes}" : ''
 
     def single_end_params = ''
+    def additional_params = ''
     if (meta.single_end) {
         if (!(fragment_length =~ /^\d+$/)) {
             error "fragment_length must be set and numeric for single-end data"
@@ -41,6 +42,11 @@ process KALLISTO_QUANT {
             error "fragment_length_sd must be set and numeric for single-end data"
         }
         single_end_params = "--single --fragment-length=${fragment_length} --sd=${fragment_length_sd}"
+    }
+    
+    // Add genomebam only if gtf is provided
+    if (gtf) {
+        additional_params = "--genomebam"
     }
 
     def strandedness = ''
@@ -56,6 +62,7 @@ process KALLISTO_QUANT {
             ${gtf_input} \\
             ${chromosomes_input} \\
             ${single_end_params} \\
+            ${additional_params} \\
             ${strandedness} \\
             ${args} \\
             -o $prefix \\

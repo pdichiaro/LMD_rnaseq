@@ -1,0 +1,3 @@
+SID	SHORT_NAME	REPLICATE	RID	strandedness	FASTQ_FOLDER
+TEST_1	sample1	R1	S001	reverse	test_data/fastq
+TEST_2	sample2	R1	S002	reverse	test_data/fastq

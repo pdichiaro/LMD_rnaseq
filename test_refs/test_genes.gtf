@@ -1,0 +1,9 @@
+chr1	test	gene	1	200	.	+	.	gene_id "gene1"; gene_name "TEST1";
+chr1	test	transcript	1	200	.	+	.	gene_id "gene1"; transcript_id "ENST00000001"; gene_name "TEST1";
+chr1	test	exon	1	200	.	+	.	gene_id "gene1"; transcript_id "ENST00000001"; gene_name "TEST1";
+chr2	test	gene	1	200	.	+	.	gene_id "gene2"; gene_name "TEST2";
+chr2	test	transcript	1	200	.	+	.	gene_id "gene2"; transcript_id "ENST00000002"; gene_name "TEST2";  
+chr2	test	exon	1	200	.	+	.	gene_id "gene2"; transcript_id "ENST00000002"; gene_name "TEST2";
+chr3	test	gene	1	200	.	+	.	gene_id "gene3"; gene_name "TEST3";
+chr3	test	transcript	1	200	.	+	.	gene_id "gene3"; transcript_id "ENST00000003"; gene_name "TEST3";
+chr3	test	exon	1	200	.	+	.	gene_id "gene3"; transcript_id "ENST00000003"; gene_name "TEST3";

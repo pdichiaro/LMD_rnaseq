@@ -1,0 +1,4 @@
+gene_id	gene_name	gene_type	chromosome	start	end
+gene1	TEST1	protein_coding	chr1	1	200
+gene2	TEST2	protein_coding	chr2	1	200
+gene3	TEST3	protein_coding	chr3	1	200

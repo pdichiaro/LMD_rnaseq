@@ -138,7 +138,7 @@ nextflow run pdichiaro/LMD_rnaseq \
 
 #### Kallisto Quantification
 - `--aligner`: Alignment method (default: `kallisto`)
-- `--extra_kallisto_quant_args`: Additional Kallisto arguments (default: `-b 1 --single-overhang --genomebam`)
+- `--extra_kallisto_quant_args`: Additional Kallisto arguments (default: `-b 50 --single-overhang --genomebam`)
 - `--extra_kallisto_index_args`: Additional Kallisto index arguments
 - `--kallisto_quant_fraglen`: Fragment length for single-end reads (default: 200)
 - `--kallisto_quant_fraglen_sd`: Fragment length standard deviation (default: 200)

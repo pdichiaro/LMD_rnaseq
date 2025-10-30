@@ -32,6 +32,7 @@ Comprehensive Reporting (MultiQC)
 
 
 
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
@@ -43,6 +44,3 @@ If you use this pipeline in your research, please cite:
 - **Di Chiaro P, et al.** "Mapping functional to morphological variation reveals the basis of regional extracellular matrix subversion and nerve invasion in pancreatic cancer." *Cancer Cell* 2024.
 - **Di Chiaro P, et al.** "A framework to mine laser microdissection-based omics data and uncover regulators of pancreatic cancer heterogeneity." *Gigascience* 2025.
 
-## Author
-
-Created by Pierluigi Di Chiaro

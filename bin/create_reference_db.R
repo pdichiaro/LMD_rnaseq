@@ -2,6 +2,7 @@
 
 #
 # Created by Pierluigi Di Chiaro
+# Licensed under MIT License - see LICENSE file for details
 #
 
 ## This tool proceeded with the creation of a reference database

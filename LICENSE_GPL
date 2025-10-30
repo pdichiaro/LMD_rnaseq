@@ -1,0 +1,32 @@
+GNU GENERAL PUBLIC LICENSE
+Version 3, 29 June 2007
+
+Copyright (C) 2024 Pierluigi Di Chiaro
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+---
+
+LMDseq: RNA sequencing analysis pipeline for low input samples 
+obtained through Laser Microdissection (LMD)
+
+This pipeline implements methodology described in:
+- Di Chiaro P, et al. "Mapping functional to morphological variation reveals 
+  the basis of regional extracellular matrix subversion and nerve invasion 
+  in pancreatic cancer." Cancer Cell 2024.
+- Di Chiaro P, et al. "A framework to mine laser microdissection-based omics 
+  data and uncover regulators of pancreatic cancer heterogeneity." 
+  Gigascience 2025.
+
+For questions about this software, please contact: [your-email]

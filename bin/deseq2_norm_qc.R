@@ -3,6 +3,7 @@
 #
 # Created by Pierluigi Di Chiaro
 # DESeq2 Normalization and Quality Control Script
+# Licensed under MIT License - see LICENSE file for details
 #
 
 library("optparse")

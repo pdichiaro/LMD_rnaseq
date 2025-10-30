@@ -84,7 +84,7 @@ Your FASTQ files should be organized as follows:
 
 ### Option 1: Using iGenomes
 ```bash
-nextflow run pdichiaro/LMD_rnaseq \
+nextflow run pdichiaro/LMDseq \
   --input assets/Sample.txt \
   --genome GRCh38 \
   --outdir results \
@@ -93,7 +93,7 @@ nextflow run pdichiaro/LMD_rnaseq \
 
 ### Option 2: Custom Reference Files
 ```bash
-nextflow run pdichiaro/LMD_rnaseq \
+nextflow run pdichiaro/LMDseq \
   --input assets/Sample.txt \
   --fasta /path/to/genome.fa \
   --gtf /path/to/annotation.gtf \
@@ -104,7 +104,7 @@ nextflow run pdichiaro/LMD_rnaseq \
 
 ### Option 3: Pre-built Kallisto Index
 ```bash
-nextflow run pdichiaro/LMD_rnaseq \
+nextflow run pdichiaro/LMDseq \
   --input assets/Sample.txt \
   --kallisto_index /path/to/kallisto.idx \
   --gtf /path/to/annotation.gtf \
@@ -114,7 +114,7 @@ nextflow run pdichiaro/LMD_rnaseq \
 
 ### Test Run
 ```bash
-nextflow run pdichiaro/LMD_rnaseq \
+nextflow run pdichiaro/LMDseq \
   -profile test_lmd \
   --outdir test_results
 ```

@@ -19,9 +19,9 @@ workflow PREPARE_GENOME {
     transcript_fasta        // file: /path/to/transcript.fasta
     index                   // directory: /path/to/kallisto/index/
     gencode                 // boolean: whether the genome is from GENCODE
-    aligner                 // string: Specifies the alignment algorithm to use - available option is kallisto
+    pseudo_aligner          // string: Specifies the pseudo-alignment algorithm to use - available option is kallisto
     skip_gtf_filter         // boolean: Skip filtering of GTF for valid scaffolds and/ or transcript IDs
-    skip_alignment          // boolean: Skip all of the alignment-based processes within the pipeline
+    skip_alignment          // boolean: Skip traditional alignment (always true for LMDseq)
 
     main:
     ch_versions = Channel.empty()
@@ -49,7 +49,7 @@ workflow PREPARE_GENOME {
 
     // Filter GTF if needed
     def filter_gtf_needed = (
-        (!skip_alignment && aligner) ||
+        pseudo_aligner ||
         (!transcript_fasta)
     ) && !skip_gtf_filter
 
@@ -75,7 +75,7 @@ workflow PREPARE_GENOME {
     // Kallisto index handling
     ch_index = Channel.empty()
 
-    def use_kallisto = aligner == 'kallisto'
+    def use_kallisto = pseudo_aligner == 'kallisto'
     def index_provided = index != null && (index.name.endsWith('.idx') || index.name.endsWith('.tar.gz'))
 
     if (index_provided) {

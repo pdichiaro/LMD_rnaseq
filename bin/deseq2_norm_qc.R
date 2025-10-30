@@ -105,13 +105,51 @@ cat("Reading gene expression matrix:", input_file, "\n")
 all.reads <- read.delim(file=input_file, sep="\t", row.names=1, check.names=FALSE)
 colnames(all.reads) <- gsub("^X","", colnames(all.reads))
 
-# Extract annotation columns (first 15 columns contain gene information)
-all_name <- all.reads[,1:15]
-count_data <- all.reads[, samples, drop=FALSE]
-count_data <- round(count_data)
+# Check if this is minimal format (gene_id only) or full annotation format
+# Full annotation format has annotation columns like "Symbol", "type_of_gene", etc.
+# Minimal format only has sample columns (gene_id is in rownames)
+has_annotations <- any(c("Symbol", "type_of_gene", "seqnames", "start") %in% colnames(all.reads))
+cat("Matrix columns:", paste(colnames(all.reads), collapse=", "), "\n")
+cat("Expected samples:", paste(samples, collapse=", "), "\n")
+cat("Has annotations:", has_annotations, "\n")
 
-# Combine annotation with counts
-all.reads <- cbind(all_name, count_data)
+if (has_annotations) {
+  cat("Full annotation format detected\n")
+  # Extract annotation columns (first 15 columns contain gene information)
+  all_name <- all.reads[,1:15]
+  count_data <- all.reads[, samples, drop=FALSE]
+  count_data <- round(count_data)
+  # Combine annotation with counts
+  all.reads <- cbind(all_name, count_data)
+} else {
+  cat("Minimal format detected - gene_id only\n")
+  # Create minimal annotation structure
+  gene_ids <- rownames(all.reads)
+  count_data <- all.reads[, samples, drop=FALSE]
+  count_data <- round(count_data)
+  
+  # Create basic annotation columns for compatibility
+  all_name <- data.frame(
+    gene_ids = gene_ids,
+    IDs = gene_ids,
+    tx_id = seq_along(gene_ids),
+    seqnames = "unknown",
+    start = "unknown",
+    end = "unknown", 
+    width = "unknown",
+    strand = "unknown",
+    LOC = "unknown",
+    type_of_gene = "protein_coding",  # Default to protein_coding for filtering
+    Symbol = gene_ids,  # Use gene_id as symbol
+    HGNC = "unknown",
+    Name = "unknown", 
+    Entrez.Gene.ID = "unknown",
+    cDNA_LENGTH = "unknown"
+  )
+  
+  # Combine annotation with counts  
+  all.reads <- cbind(all_name, count_data)
+}
 
 # Save integer counts
 write.table(all.reads, file=file.path(Counts_folder, "EX_reads_RAW_integer.txt"), sep="\t", col.names=NA)

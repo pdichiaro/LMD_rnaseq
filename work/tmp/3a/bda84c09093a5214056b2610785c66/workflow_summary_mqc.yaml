@@ -1,0 +1,44 @@
+id: 'LMD_RNAseq-summary'
+description: ' - this information is collected when the pipeline is started.'
+section_name: 'LMD_RNAseq Workflow Summary'
+section_href: 'https://github.com/LMD_RNAseq'
+plot_type: 'html'
+data: |
+    <p style="font-size:110%"><b>Input/output options</b></p>
+    <dl class="dl-horizontal">
+        <dt>input</dt><dd><samp>../test_sample.txt</samp></dd>
+        <dt>outdir</dt><dd><samp>results_test</samp></dd>
+    </dl>
+    <p style="font-size:110%"><b>Reference genome options</b></p>
+    <dl class="dl-horizontal">
+        <dt>fasta</dt><dd><samp>s3://ngi-igenomes/igenomes/Saccharomyces_cerevisiae/Ensembl/R64-1-1/Sequence/WholeGenomeFasta/genome.fa</samp></dd>
+        <dt>genome</dt><dd><samp>R64-1-1</samp></dd>
+        <dt>gtf</dt><dd><samp>s3://ngi-igenomes/igenomes/Saccharomyces_cerevisiae/Ensembl/R64-1-1/Annotation/Genes/genes.gtf</samp></dd>
+    </dl>
+    <p style="font-size:110%"><b>Alignment options</b></p>
+    <dl class="dl-horizontal">
+        <dt>extra_kallisto_quant_args</dt><dd><samp>-b 50 --single-overhang --genomebam</samp></dd>
+        <dt>skip_alignment</dt><dd><samp>true</samp></dd>
+    </dl>
+    <p style="font-size:110%"><b>Institutional config options</b></p>
+    <dl class="dl-horizontal">
+        <dt>config_profile_description</dt><dd><samp>Minimal test dataset to check LMD_rnaseq pipeline function</samp></dd>
+        <dt>config_profile_name</dt><dd><samp>LMD Test profile</samp></dd>
+    </dl>
+    <p style="font-size:110%"><b>Generic options</b></p>
+    <dl class="dl-horizontal">
+        <dt>max_cpus</dt><dd><samp>2</samp></dd>
+        <dt>max_memory</dt><dd><samp>4.GB</samp></dd>
+        <dt>max_time</dt><dd><samp>2.h</samp></dd>
+        <dt>trace_report_suffix</dt><dd><samp>2025-10-30_15-31-04</samp></dd>
+    </dl>
+    <p style="font-size:110%"><b>Core Nextflow options</b></p>
+    <dl class="dl-horizontal">
+        <dt>configFiles</dt><dd><samp>/home/user/LMDseq/nextflow.config</samp></dd>
+        <dt>launchDir</dt><dd><samp>/home/user/LMDseq</samp></dd>
+        <dt>profile</dt><dd><samp>test_lmd</samp></dd>
+        <dt>projectDir</dt><dd><samp>/home/user/LMDseq</samp></dd>
+        <dt>runName</dt><dd><samp>determined_mahavira</samp></dd>
+        <dt>userName</dt><dd><samp>user</samp></dd>
+        <dt>workDir</dt><dd><samp>/home/user/LMDseq/work</samp></dd>
+    </dl>

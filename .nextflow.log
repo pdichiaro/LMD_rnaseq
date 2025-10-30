@@ -1,0 +1,171 @@
+Oct-30 16:23:55.685 [main] DEBUG nextflow.cli.Launcher - $> nextflow run . -profile test_lmd --genome R64-1-1 --outdir results_test --input ../test_sample.txt --dry-run
+Oct-30 16:23:55.862 [main] DEBUG nextflow.cli.CmdRun - N E X T F L O W  ~  version 25.04.7
+Oct-30 16:23:55.898 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; embedded=false; plugins-dir=/home/user/.nextflow/plugins; core-plugins: nf-amazon@2.15.0-patch1,nf-azure@1.16.0-patch1,nf-cloudcache@0.4.3,nf-codecommit@0.2.3,nf-console@1.2.1,nf-google@1.21.1,nf-k8s@1.0.0,nf-tower@1.11.4-patch1,nf-wave@1.12.1
+Oct-30 16:23:55.941 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
+Oct-30 16:23:55.942 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
+Oct-30 16:23:55.947 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.12.0 in 'deployment' mode
+Oct-30 16:23:55.968 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
+Oct-30 16:23:57.241 [main] DEBUG nextflow.config.ConfigBuilder - Found config local: /home/user/LMDseq/nextflow.config
+Oct-30 16:23:57.245 [main] DEBUG nextflow.config.ConfigBuilder - Parsing config file: /home/user/LMDseq/nextflow.config
+Oct-30 16:23:57.268 [main] DEBUG n.secret.LocalSecretsProvider - Secrets store: /home/user/.nextflow/secrets/store.json
+Oct-30 16:23:57.273 [main] DEBUG nextflow.secret.SecretsLoader - Discovered secrets providers: [nextflow.secret.LocalSecretsProvider@7be1ce6a] - activable => nextflow.secret.LocalSecretsProvider@7be1ce6a
+Oct-30 16:23:57.296 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `test_lmd`
+Oct-30 16:23:58.754 [main] DEBUG nextflow.config.ConfigBuilder - Available config profiles: [debug, test, mamba, conda, singularity, test_lmd, test_full, docker]
+Oct-30 16:23:58.809 [main] DEBUG nextflow.cli.CmdRun - Applied DSL=2 from script declaration
+Oct-30 16:23:58.833 [main] DEBUG nextflow.cli.CmdRun - Launching `./main.nf` [stupefied_hilbert] DSL2 - revision: 88ff1c5065
+Oct-30 16:23:58.835 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins declared=[nf-schema@2.3.0]
+Oct-30 16:23:58.836 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins default=[]
+Oct-30 16:23:58.836 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins resolved requirement=[nf-schema@2.3.0]
+Oct-30 16:23:58.839 [main] DEBUG nextflow.plugin.PluginUpdater - Installing plugin nf-schema version: 2.3.0
+Oct-30 16:23:58.852 [main] INFO  org.pf4j.AbstractPluginManager - Plugin 'nf-schema@2.3.0' resolved
+Oct-30 16:23:58.852 [main] INFO  org.pf4j.AbstractPluginManager - Start plugin 'nf-schema@2.3.0'
+Oct-30 16:23:58.862 [main] DEBUG nextflow.plugin.BasePlugin - Plugin started nf-schema@2.3.0
+Oct-30 16:23:58.941 [main] DEBUG nextflow.Session - Session UUID: 89898f7a-63ed-4914-99b6-510520b82a95
+Oct-30 16:23:58.942 [main] DEBUG nextflow.Session - Run name: stupefied_hilbert
+Oct-30 16:23:58.943 [main] DEBUG nextflow.Session - Executor pool size: 8
+Oct-30 16:23:58.954 [main] DEBUG nextflow.file.FilePorter - File porter settings maxRetries=3; maxTransfers=50; pollTimeout=null
+Oct-30 16:23:58.961 [main] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'FileTransfer' minSize=10; maxSize=24; workQueue=LinkedBlockingQueue[-1]; allowCoreThreadTimeout=false
+Oct-30 16:23:58.989 [main] DEBUG nextflow.cli.CmdRun - 
+  Version: 25.04.7 build 5955
+  Created: 08-09-2025 13:29 UTC 
+  System: Linux 6.1.102
+  Runtime: Groovy 4.0.26 on OpenJDK 64-Bit Server VM 21.0.8+9-Ubuntu-0ubuntu124.04.1
+  Encoding: UTF-8 (ANSI_X3.4-1968)
+  Process: 4280@e2b.local [127.0.1.1]
+  CPUs: 8 - Mem: 7.7 GB (7 GB) - Swap: 128 MB (128 MB)
+Oct-30 16:23:59.022 [main] DEBUG nextflow.Session - Work-dir: /home/user/LMDseq/work [ext2/ext3]
+Oct-30 16:23:59.051 [main] DEBUG nextflow.executor.ExecutorFactory - Extension executors providers=[]
+Oct-30 16:23:59.068 [main] DEBUG nextflow.Session - Observer factory: DefaultObserverFactory
+Oct-30 16:23:59.104 [main] DEBUG nextflow.Session - Observer factory: ValidationObserverFactory
+Oct-30 16:23:59.136 [main] DEBUG nextflow.Session - Observer factory (v2): LinObserverFactory
+Oct-30 16:23:59.169 [main] DEBUG nextflow.cache.CacheFactory - Using Nextflow cache factory: nextflow.cache.DefaultCacheFactory
+Oct-30 16:23:59.182 [main] DEBUG nextflow.util.CustomThreadPool - Creating default thread pool > poolSize: 9; maxThreads: 1000
+Oct-30 16:23:59.262 [main] DEBUG nextflow.Session - Session start
+Oct-30 16:23:59.267 [main] DEBUG nextflow.trace.TraceFileObserver - Workflow started -- trace file: /home/user/LMDseq/trace.txt
+Oct-30 16:23:59.527 [main] DEBUG nextflow.script.ScriptRunner - > Launching execution
+Oct-30 16:24:01.346 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [paramsSummaryMap:paramsSummaryMap]; plugin Id: nf-schema
+Oct-30 16:24:01.375 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [samplesheetToList:samplesheetToList]; plugin Id: nf-schema
+Oct-30 16:24:01.858 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [paramsSummaryLog:paramsSummaryLog]; plugin Id: nf-schema
+Oct-30 16:24:01.860 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [validateParameters:validateParameters]; plugin Id: nf-schema
+Oct-30 16:24:01.862 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [paramsSummaryMap:paramsSummaryMap]; plugin Id: nf-schema
+Oct-30 16:24:02.836 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [paramsSummaryLog:paramsSummaryLog]; plugin Id: nf-schema
+Oct-30 16:24:02.838 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [validateParameters:validateParameters]; plugin Id: nf-schema
+Oct-30 16:24:02.841 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [paramsSummaryMap:paramsSummaryMap]; plugin Id: nf-schema
+Oct-30 16:24:03.272 [main] INFO  nextflow.Nextflow - [1mInput/output options[0m
+  [0;34minput                     : [0;32m../test_sample.txt[0m
+  [0;34moutdir                    : [0;32mresults_test[0m
+
+[1mReference genome options[0m
+  [0;34mgenome                    : [0;32mR64-1-1[0m
+
+[1mPseudo-alignment options[0m
+  [0;34mseq_mode                  : [0;32mPE[0m
+
+[1mInstitutional config options[0m
+  [0;34mconfig_profile_name       : [0;32mLMD Test profile[0m
+  [0;34mconfig_profile_description: [0;32mMinimal test dataset to check LMD_rnaseq pipeline function[0m
+
+[1mGeneric options[0m
+  [0;34mtrace_report_suffix       : [0;32m2025-10-30_16-23-57[0m
+  [0;34mmax_memory                : [0;32m4.GB[0m
+  [0;34mmax_cpus                  : [0;32m2[0m
+  [0;34mmax_time                  : [0;32m2.h[0m
+
+[1mCore Nextflow options[0m
+  [0;34mrunName                   : [0;32mstupefied_hilbert[0m
+  [0;34mlaunchDir                 : [0;32m/home/user/LMDseq[0m
+  [0;34mworkDir                   : [0;32m/home/user/LMDseq/work[0m
+  [0;34mprojectDir                : [0;32m/home/user/LMDseq[0m
+  [0;34muserName                  : [0;32muser[0m
+  [0;34mprofile                   : [0;32mtest_lmd[0m
+  [0;34mconfigFiles               : [0;32m/home/user/LMDseq/nextflow.config[0m
+
+!! Only displaying parameters that differ from the pipeline defaults !!
+-[2m----------------------------------------------------[0m-
+Oct-30 16:24:03.303 [main] DEBUG nextflow.script.ScriptRunner - Parsed script files:
+  Script_de6fd97b09df19b0: /home/user/LMDseq/modules/nf-core/multiqc/main.nf
+  Script_215a636da7ab24a2: /home/user/LMDseq/subworkflows/nf-core/utils_nfschema_plugin/main.nf
+  Script_5c4e8d4051efa81e: /home/user/LMDseq/subworkflows/nf-core/utils_nfcore_pipeline/main.nf
+  Script_d941bf3d83c1c6dc: /home/user/LMDseq/subworkflows/local/prepare_genome/main.nf
+  Script_a780234b47eb3af3: /home/user/LMDseq/modules/nf-core/gunzip/main.nf
+  Script_2912d89aef1182e4: /home/user/LMDseq/main.nf
+  Script_db65424f0b137a33: /home/user/LMDseq/modules/local/kallisto/index/main.nf
+  Script_46c2c2ed6579530d: /home/user/LMDseq/modules/local/gtf_filter/main.nf
+  Script_efd0aae184e05327: /home/user/LMDseq/modules/local/deseq2_norm_qc/main.nf
+  Script_28d1f93bb5009d42: /home/user/LMDseq/modules/local/samtools/main.nf
+  Script_2a3123de5fac596c: /home/user/LMDseq/modules/nf-core/untar/main.nf
+  Script_4f612cfd8c52e8cd: /home/user/LMDseq/subworkflows/nf-core/utils_nextflow_pipeline/main.nf
+  Script_055577d924602f58: /home/user/LMDseq/modules/local/fastqc/main.nf
+  Script_a8f4b4be534bba60: /home/user/LMDseq/workflows/lmd_rnaseq.nf
+  Script_342bc1552d6e1d16: /home/user/LMDseq/subworkflows/local/utils_nfcore_rnaseq_pipeline/main.nf
+  Script_4b8ebe810a5a9be9: /home/user/LMDseq/modules/local/kallisto/quant/main.nf
+  Script_6da1bd2316115b42: /home/user/LMDseq/subworkflows/local/fastq_fastqc_trimgalore/main.nf
+  Script_868982a8ab64eb12: /home/user/LMDseq/modules/local/tximport/main.nf
+  Script_693bbc6163e7673d: /home/user/LMDseq/modules/nf-core/rsem/preparereference/main.nf
+  Script_4779b6382e5427ab: /home/user/LMDseq/modules/local/cat/fastq/main.nf
+  Script_89479fc8fff50057: /home/user/LMDseq/modules/local/preprocess_transcripts_fasta_gencode/main.nf
+  Script_b666edf0129ec7fc: /home/user/LMDseq/modules/nf-core/gffread/main.nf
+  Script_1f5843d45d78d6ca: /home/user/LMDseq/subworkflows/local/kallisto/main.nf
+  Script_b6b3a3680e486fbe: /home/user/LMDseq/modules/local/trimgalore/main.nf
+  Script_08136f7fdc5f1da9: /home/user/LMDseq/modules/local/bam_coverage/main.nf
+Oct-30 16:24:03.303 [main] DEBUG nextflow.Session - Session aborted -- Cause: Genome fasta file not specified with e.g. '--fasta genome.fa' or via a detectable config file. You must supply a genome FASTA file or use --skip_alignment and provide your own transcript fasta using --transcript_fasta for use in quantification.
+Oct-30 16:24:03.321 [main] ERROR nextflow.cli.Launcher - @unknown
+nextflow.exception.WorkflowScriptErrorException: Genome fasta file not specified with e.g. '--fasta genome.fa' or via a detectable config file. You must supply a genome FASTA file or use --skip_alignment and provide your own transcript fasta using --transcript_fasta for use in quantification.
+	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
+	at nextflow.Nextflow.error(Nextflow.groovy:241)
+	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
+	at Script_342bc1552d6e1d16.validateInputParameters(Script_342bc1552d6e1d16:187)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at nextflow.script.FunctionDef.invoke_a(FunctionDef.groovy:64)
+	at nextflow.script.ComponentDef.invoke_o(ComponentDef.groovy:40)
+	at nextflow.script.WorkflowBinding.invokeMethod(WorkflowBinding.groovy:105)
+	at org.codehaus.groovy.runtime.InvokerHelper.invokePogoMethod(InvokerHelper.java:651)
+	at org.codehaus.groovy.runtime.InvokerHelper.invokeMethod(InvokerHelper.java:628)
+	at org.codehaus.groovy.runtime.metaclass.ClosureMetaClass.invokeOnDelegationObjects(ClosureMetaClass.java:392)
+	at org.codehaus.groovy.runtime.metaclass.ClosureMetaClass.invokeMethod(ClosureMetaClass.java:331)
+	at groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1007)
+	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
+	at Script_342bc1552d6e1d16$_runScript_closure12$_closure14.doCall(Script_342bc1552d6e1d16:69)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.codehaus.groovy.reflection.CachedMethod.invoke(CachedMethod.java:343)
+	at groovy.lang.MetaMethod.doMethodInvoke(MetaMethod.java:328)
+	at org.codehaus.groovy.runtime.metaclass.ClosureMetaClass.invokeMethod(ClosureMetaClass.java:280)
+	at groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1007)
+	at groovy.lang.Closure.call(Closure.java:433)
+	at groovy.lang.Closure.call(Closure.java:412)
+	at nextflow.script.WorkflowDef.run0(WorkflowDef.groovy:205)
+	at nextflow.script.WorkflowDef.run(WorkflowDef.groovy:189)
+	at nextflow.script.BindableDef.invoke_a(BindableDef.groovy:51)
+	at nextflow.script.ComponentDef.invoke_o(ComponentDef.groovy:40)
+	at nextflow.script.WorkflowBinding.invokeMethod(WorkflowBinding.groovy:105)
+	at org.codehaus.groovy.runtime.InvokerHelper.invokePogoMethod(InvokerHelper.java:651)
+	at org.codehaus.groovy.runtime.InvokerHelper.invokeMethod(InvokerHelper.java:628)
+	at org.codehaus.groovy.runtime.metaclass.ClosureMetaClass.invokeOnDelegationObjects(ClosureMetaClass.java:392)
+	at org.codehaus.groovy.runtime.metaclass.ClosureMetaClass.invokeMethod(ClosureMetaClass.java:331)
+	at groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1007)
+	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
+	at Script_2912d89aef1182e4$_runScript_closure2$_closure4.doCall(Script_2912d89aef1182e4:96)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.codehaus.groovy.reflection.CachedMethod.invoke(CachedMethod.java:343)
+	at groovy.lang.MetaMethod.doMethodInvoke(MetaMethod.java:328)
+	at org.codehaus.groovy.runtime.metaclass.ClosureMetaClass.invokeMethod(ClosureMetaClass.java:280)
+	at groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1007)
+	at groovy.lang.Closure.call(Closure.java:433)
+	at groovy.lang.Closure.call(Closure.java:412)
+	at nextflow.script.WorkflowDef.run0(WorkflowDef.groovy:205)
+	at nextflow.script.WorkflowDef.run(WorkflowDef.groovy:189)
+	at nextflow.script.BindableDef.invoke_a(BindableDef.groovy:51)
+	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
+	at nextflow.script.BaseScript.run0(BaseScript.groovy:182)
+	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
+	at nextflow.script.BaseScript.run(BaseScript.groovy:193)
+	at nextflow.script.parser.v1.ScriptLoaderV1.runScript(ScriptLoaderV1.groovy:246)
+	at nextflow.script.parser.v1.ScriptLoaderV1.runScript(ScriptLoaderV1.groovy)
+	at nextflow.script.ScriptRunner.run(ScriptRunner.groovy:246)
+	at nextflow.script.ScriptRunner.execute(ScriptRunner.groovy:139)
+	at nextflow.cli.CmdRun.run(CmdRun.groovy:379)
+	at nextflow.cli.Launcher.run(Launcher.groovy:513)
+	at nextflow.cli.Launcher.main(Launcher.groovy:673)

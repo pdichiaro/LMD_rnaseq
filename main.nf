@@ -54,7 +54,7 @@ workflow LMD_RNAseq {
         params.transcript_fasta,
         params.index,
         params.gencode,
-        params.aligner,
+        params.pseudo_aligner,
         params.skip_gtf_filter,
         params.skip_alignment
     )

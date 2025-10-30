@@ -26,7 +26,7 @@ include { samplesheetToList                } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc             } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML           } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { checkSamplesAfterGrouping        } from '../subworkflows/local/utils_nfcore_rnaseq_pipeline'
-include { multiqcTsvFromList               } from '../subworkflows/nf-core/fastq_qc_trim_filter_setstrandedness'
+include { multiqcTsvFromList               } from '../subworkflows/local/utils_nfcore_rnaseq_pipeline'
 include { biotypeInGtf                     } from '../subworkflows/local/utils_nfcore_rnaseq_pipeline'
 include { getInferexperimentStrandedness   } from '../subworkflows/local/utils_nfcore_rnaseq_pipeline'
 include { methodsDescriptionText           } from '../subworkflows/local/utils_nfcore_rnaseq_pipeline'
@@ -118,7 +118,7 @@ workflow RNASEQ {
     // Run Subworkflow: Alignment with KALLISTO, generate pseudo-bam, raw count matrix, and DESeq2 normalization/QC
     // -----------------------
     ch_chromosomes = params.chromosomes ? Channel.fromPath(params.chromosomes) : Channel.empty()        
-    if (params.aligner == 'kallisto') {
+    if (params.pseudo_aligner == 'kallisto') {
         KALLISTO(
             ch_trimmed_reads,
             ch_index,
@@ -127,7 +127,7 @@ workflow RNASEQ {
             params.kallisto_quant_fraglen,
             params.kallisto_quant_fraglen_sd,
             params.bin_size,
-            params.reference ? file(params.reference) : [],
+            params.reference ? Channel.value(file(params.reference)) : Channel.value([]),
             ch_samplesheet
         )
     }
@@ -185,10 +185,10 @@ workflow RNASEQ {
 
         ch_name_replacements = ch_input
             .map{ meta, reads ->
-                def name1 = file(reads[0][0]).simpleName + "\t" + meta.id + '_1'
+                def name1 = file(reads[0]).simpleName + "\t" + meta.id + '_1'
                 def fastqcnames = meta.id + "_raw\t" + meta.id + "\n" + meta.id + "_trimmed\t" + meta.id
-                if (reads[0][1] ){
-                    def name2 = file(reads[0][1]).simpleName + "\t" + meta.id + '_2'
+                if (reads.size() > 1 && !meta.single_end){
+                    def name2 = file(reads[1]).simpleName + "\t" + meta.id + '_2'
                     def fastqcnames1 = meta.id + "_raw_1\t" + meta.id + "_1\n" + meta.id + "_trimmed_1\t" + meta.id + "_1"
                     def fastqcnames2 = meta.id + "_raw_2\t" + meta.id + "_2\n" + meta.id + "_trimmed_2\t" + meta.id + "_2"
                     return [ name1, name2, fastqcnames1, fastqcnames2 ]

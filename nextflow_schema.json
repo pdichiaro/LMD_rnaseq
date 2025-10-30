@@ -1,8 +1,8 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://raw.githubusercontent.com/pdichiaro/LMD_rnaseq/master/nextflow_schema.json",
-    "title": "LMD_RNAseq pipeline parameters",
-    "description": "RNA sequencing analysis pipeline for low input samples from Laser Microdissection (LMD).",
+    "title": "LMDseq pipeline parameters",
+    "description": "RNA sequencing analysis pipeline for low input samples from Laser Microdissection (LMD). Optimized pseudo-alignment workflow with flexible output formats.",
     "type": "object",
     "$defs": {
         "input_output_options": {
@@ -123,8 +123,8 @@
                     "exists": true,
                     "mimetype": "text/plain",
                     "fa_icon": "fas fa-database",
-                    "description": "Path to reference annotation file for enhanced gene expression matrix creation.",
-                    "help_text": "This file provides additional gene annotations for the expression matrix generation step."
+                    "description": "Optional path to gene annotation reference file for enriched matrix output.",
+                    "help_text": "OPTIONAL: Provides gene symbols, names, coordinates, and database cross-references. Without this file, a clean minimal matrix (gene_id + counts) is generated. With this file, a comprehensive annotated matrix is produced. Choose based on your analysis needs."
                 },
                 "chromosomes": {
                     "type": "string",
@@ -238,23 +238,30 @@
             "fa_icon": "fas fa-trash-alt"
         },
         "alignment_options": {
-            "title": "Alignment options",
-            "type": "object",
+            "title": "Pseudo-alignment options",
+            "type": "object", 
             "fa_icon": "fas fa-map-signs",
-            "description": "Options to adjust parameters and filtering criteria for Kallisto pseudo-alignment.",
+            "description": "Options to adjust parameters for Kallisto pseudo-alignment. Traditional alignment is disabled for LMD samples.",
             "properties": {
-                "aligner": {
+                "pseudo_aligner": {
                     "type": "string",
                     "default": "kallisto",
-                    "description": "Specifies the alignment algorithm to use. LMD_RNAseq is optimized for Kallisto.",
+                    "description": "Pseudo-alignment algorithm optimized for LMD samples.",
                     "fa_icon": "fas fa-map-signs",
                     "enum": ["kallisto"]
                 },
+                "skip_pseudo_alignment": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Skip pseudo-alignment step.",
+                    "fa_icon": "fas fa-forward"
+                },
+
                 "extra_kallisto_quant_args": {
                     "type": "string",
                     "minLength": 1,
-                    "default": "-b 1 --single-overhang --genomebam",
-                    "description": "Extra arguments to pass to Kallisto quant command in addition to defaults defined by the pipeline.",
+                    "default": "-b 50 --single-overhang --genomebam",
+                    "description": "Extra arguments to pass to Kallisto quant command optimized for LMD samples.",
                     "fa_icon": "fas fa-plus"
                 },
                 "extra_kallisto_index_args": {
@@ -288,9 +295,17 @@
                     "fa_icon": "fas fa-chart-bar"
                 },
                 "skip_alignment": {
-                    "type": "boolean",
+                    "type": "boolean", 
+                    "default": true,
                     "fa_icon": "fas fa-fast-forward",
-                    "description": "Skip all of the alignment-based processes within the pipeline."
+                    "description": "Skip traditional alignment (always true for LMD samples - uses pseudo-alignment only)."
+                },
+                "seq_mode": {
+                    "type": "string",
+                    "default": "SE",
+                    "description": "Sequencing mode for LMD samples.",
+                    "fa_icon": "fas fa-dna",
+                    "enum": ["SE", "PE"]
                 }
             }
         },
@@ -357,6 +372,26 @@
                     "default": "25.MB",
                     "fa_icon": "fas fa-file-upload",
                     "hidden": true
+                }
+            }
+        },
+        "disabled_features": {
+            "title": "Disabled features (not used for LMD samples)",
+            "type": "object",
+            "fa_icon": "fas fa-ban", 
+            "description": "Features disabled for LMD samples (UMI processing and rRNA removal not needed).",
+            "properties": {
+                "with_umi": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "UMI processing (disabled for LMD samples).",
+                    "fa_icon": "fas fa-ban"
+                },
+                "remove_ribo_rna": {
+                    "type": "boolean", 
+                    "default": false,
+                    "description": "Ribosomal RNA removal (disabled for LMD samples).",
+                    "fa_icon": "fas fa-ban"
                 }
             }
         },
@@ -537,6 +572,9 @@
         },
         {
             "$ref": "#/$defs/quality_control"
+        },
+        {
+            "$ref": "#/$defs/disabled_features"  
         },
         {
             "$ref": "#/$defs/institutional_config_options"

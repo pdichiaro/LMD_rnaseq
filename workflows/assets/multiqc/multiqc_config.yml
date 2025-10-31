@@ -40,8 +40,7 @@ report_section_order:
     order: 3000
   qualimap:
     order: 3000
-  rseqc:
-    order: 3000
+
   umitools:
     order: 3000
   # Quantification
@@ -94,7 +93,7 @@ run_modules:
   - samtools
   - picard
   - preseq
-  - rseqc
+
   - qualimap
   - kraken
   - bracken
@@ -167,20 +166,7 @@ sp:
   bracken:
     fn: "*.kraken2.report_bracken.txt"
 
-  rseqc/bam_stat:
-    fn: "*.bam_stat.txt"
-  rseqc/gene_body_coverage:
-    skip: true
-  rseqc/junction_annotation:
-    fn: "*.junction_annotation.log"
-  rseqc/read_gc:
-    skip: true
-  rseqc/read_distribution:
-    fn: "*.read_distribution.txt"
-  rseqc/infer_experiment:
-    fn: "*.infer_experiment.txt"
-  rseqc/tin:
-    fn: "*.summary.txt"
+
 
   picard/markdups:
     fn: "*.MarkDuplicates.metrics.txt"
@@ -239,16 +225,10 @@ custom_data:
       namespace: "Samples failed mapping threshold"
   fail_strand_check:
     section_name: "Strandedness Checks"
-    description: "<p>The strandedness used for analysis in this workflow can either
-      be provided by the user or automatically inferred by <b>Salmon</b> using a sample
-      of reads. In both cases, strandedness is verified at the end of the workflow
-      using <b>RSeQC</b>'s <a href='http://rseqc.sourceforge.net/#infer-experiment-py'>infer_experiment.py</a>
-      on genomic alignments. In this table, a pass indicates a match between the supplied
-      strandedness (or that inferred by Salmon) and RSeQC results. A fail indicates
-      a mismatch or 'undetermined' strandedness. 'Undetermined' strandedness can signal
-      QC issues, including potential genomic DNA contamination.</p><p><b>Note:</b>
-      Rows are duplicated for an 'auto' setting to allow comparison of statistics
-      between inference methods.</p>"
+    description: "<p>The strandedness used for analysis in this workflow is provided
+      by the user for Kallisto pseudo-alignment. For LMD samples, strandedness is
+      typically unstranded or should be specified based on the library preparation
+      protocol used.</p>"
     plot_type: "table"
     pconfig:
       id: "fail_strand_check_table"
@@ -256,8 +236,7 @@ custom_data:
       namespace: "Samples strandedness check"
     headers:
       Status:
-        description: Pass if the strandedness inferred by RSeQC matches that provided
-          by the user or predicted by Salmon. Fail otherwise.
+        description: Status of strandedness configuration for Kallisto analysis.
       Strand inference method:
         description: Tool used to detect strandedness
       Provided strandedness:

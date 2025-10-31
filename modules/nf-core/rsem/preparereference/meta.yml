@@ -5,7 +5,7 @@ keywords:
   - genome
   - index
 tools:
-  - rseqc:
+  - rsem:
       description: |
         RSEM: accurate transcript quantification from RNA-Seq data with or without a reference genome
       homepage: https://github.com/deweylab/RSEM

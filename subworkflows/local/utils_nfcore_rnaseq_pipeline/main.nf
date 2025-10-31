@@ -215,15 +215,6 @@ def validateInputParameters() {
         }
     }
 
-    // Check which RSeQC modules we are running
-    def valid_rseqc_modules = ['bam_stat', 'inner_distance', 'infer_experiment', 'junction_annotation', 'junction_saturation', 'read_distribution', 'read_duplication', 'tin']
-    def rseqc_modules = params.rseqc_modules ? params.rseqc_modules.split(',').collect{ it.trim().toLowerCase() } : []
-    if ((valid_rseqc_modules + rseqc_modules).unique().size() != valid_rseqc_modules.size()) {
-        error("Invalid option: ${params.rseqc_modules}. Valid options for '--rseqc_modules': ${valid_rseqc_modules.join(', ')}")
-    }
-
-
-
     // Check if file with list of fastas is provided when running BBSplit
     if (!params.skip_bbsplit && !params.bbsplit_index && params.bbsplit_fasta_list) {
         def ch_bbsplit_fasta_list = file(params.bbsplit_fasta_list)
@@ -464,31 +455,7 @@ def biotypeInGtf(gtf_file, biotype) {
     }
 }
 
-//
-// Function that parses RSeQC infer_experiment output file to get inferred strandedness
-//
-def getInferexperimentStrandedness(inferexperiment_file, stranded_threshold = 0.8, unstranded_threshold = 0.1) {
-    def forwardFragments = 0
-    def reverseFragments = 0
-    def unstrandedFragments = 0
 
-    inferexperiment_file.eachLine { line ->
-        def unstranded_matcher = line =~ /Fraction of reads failed to determine:\s([\d\.]+)/
-        def se_sense_matcher = line =~ /Fraction of reads explained by "\++,--":\s([\d\.]+)/
-        def se_antisense_matcher = line =~ /Fraction of reads explained by "\+-,-\+":\s([\d\.]+)/
-        def pe_sense_matcher = line =~ /Fraction of reads explained by "1\++,1--,2\+-,2-\+":\s([\d\.]+)/
-        def pe_antisense_matcher = line =~ /Fraction of reads explained by "1\+-,1-\+,2\+\+,2--":\s([\d\.]+)/
-
-        if (unstranded_matcher) unstrandedFragments = unstranded_matcher[0][1].toFloat() * 100
-        if (se_sense_matcher) forwardFragments = se_sense_matcher[0][1].toFloat() * 100
-        if (se_antisense_matcher) reverseFragments = se_antisense_matcher[0][1].toFloat() * 100
-        if (pe_sense_matcher) forwardFragments = pe_sense_matcher[0][1].toFloat() * 100
-        if (pe_antisense_matcher) reverseFragments = pe_antisense_matcher[0][1].toFloat() * 100
-    }
-
-    // Use shared calculation function to determine strandedness
-    return calculateStrandedness(forwardFragments, reverseFragments, unstrandedFragments, stranded_threshold, unstranded_threshold)
-}
 
 //
 // Print pipeline summary on completion

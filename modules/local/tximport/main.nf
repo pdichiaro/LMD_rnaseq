@@ -20,63 +20,41 @@ process TXIMPORT {
     script:
     def reference_arg = (reference.toString() != "[]" && reference.toString() != "") ? "-r ${reference}" : ""
     """
-    # Validate inputs
-    echo "Input validation:"
+    set -e  # Exit on any error
+    
+    echo "=== TXIMPORT MODULE ==="
     echo "GTF file: ${gtf}"
     echo "Reference: ${reference}"
     echo "Number of kallisto folders: ${all_folders.size()}"
+    echo "Kallisto directories: ${all_folders.join(' ')}"
     
-    # Check GTF file exists
-    if [ ! -f "${gtf}" ]; then
-        echo "Error: GTF file not found: ${gtf}"
-        exit 1
-    fi
+    # Validate inputs exist
+    [ -f "${gtf}" ] || { echo "ERROR: GTF file not found: ${gtf}"; exit 1; }
     
-    # Check all kallisto folders exist and contain abundance.h5
+    # Check kallisto outputs
     for dir in ${all_folders.join(' ')}; do
-        if [ ! -d "\$dir" ]; then
-            echo "Error: Kallisto output directory not found: \$dir"
-            exit 1
-        fi
-        if [ ! -f "\$dir/abundance.h5" ]; then
-            echo "Error: abundance.h5 not found in \$dir"
-            exit 1
-        fi
-        echo "✓ Valid kallisto output: \$dir"
+        [ -d "\$dir" ] || { echo "ERROR: Directory not found: \$dir"; exit 1; }
+        [ -f "\$dir/abundance.h5" ] || { echo "ERROR: abundance.h5 not found in \$dir"; exit 1; }
+        echo "✓ Valid: \$dir"
     done
 
-    # Create space-separated list of directories for R script
-    DIRS="${all_folders.join(' ')}"
-
-    # Run the R script to generate the expression matrix
-    echo "Running tximport with the following parameters:"
-    echo "  GTF: ${gtf}"
-    echo "  Reference: ${reference_arg}"
-    echo "  Input dirs: \$DIRS"
-    echo "  Output: EX_reads_RAW.txt"
-    
+    # Run tximport
+    echo "Running tximport R script..."
     Rscript ${projectDir}/bin/create_reference_db.R \\
         -g ${gtf} \\
         ${reference_arg} \\
-        -i "\$DIRS" \\
-        -o EX_reads_RAW.txt
+        -i "${all_folders.join(' ')}" \\
+        -o EX_reads_RAW.txt || { echo "ERROR: R script failed"; exit 1; }
 
-    # Validate output was created
-    if [ ! -f "EX_reads_RAW.txt" ]; then
-        echo "Error: Output file EX_reads_RAW.txt was not created"
-        exit 1
-    fi
+    # Validate output
+    [ -f "EX_reads_RAW.txt" ] || { echo "ERROR: Output file not created"; exit 1; }
     
-    # Show output summary
-    echo "Output file created successfully:"
-    echo "  File: EX_reads_RAW.txt"
-    echo "  Size: \$(wc -l < EX_reads_RAW.txt) lines"
-    echo "  Columns: \$(head -1 EX_reads_RAW.txt | tr '\t' '\n' | wc -l) columns"
+    echo "✓ Success: \$(wc -l < EX_reads_RAW.txt) genes, \$(awk -F'\t' 'NR==1{print NF-1}' EX_reads_RAW.txt) samples"
 
-    # Save versions
     cat <<-END_VERSIONS > versions.yml
     "\${task.process}":
-        Rscript: \$(Rscript --version 2>&1 | sed 's/R scripting front-end version //')
+        R: \$(R --version | head -n1 | sed 's/R version //' | sed 's/ .*//')
+        tximport: \$(Rscript -e "cat(as.character(packageVersion('tximport')))")
     END_VERSIONS
     """
 }

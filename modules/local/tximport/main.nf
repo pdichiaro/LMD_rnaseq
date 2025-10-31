@@ -53,8 +53,8 @@ process TXIMPORT {
 
     cat <<-END_VERSIONS > versions.yml
     "\${task.process}":
-        R: \$(R --version | head -n1 | sed 's/R version //' | sed 's/ .*//')
-        tximport: \$(Rscript -e "cat(as.character(packageVersion('tximport')))")
+        R: \$(R --version 2>&1 | head -n1 | sed 's/R version //' | sed 's/ .*//')
+        tximport: \$(Rscript -e "cat(packageVersion('tximport'))" 2>/dev/null || echo "unknown")
     END_VERSIONS
     """
 }

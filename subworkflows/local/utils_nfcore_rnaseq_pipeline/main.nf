@@ -177,14 +177,8 @@ def validateInputParameters() {
 
     genomeExistsError()
 
-    if (
-        !params.fasta &&
-        (
-            ! params.skip_alignment ||  // Alignment needs fasta
-            ! params.transcript_fasta // Dynamically making a transcript fasta needs the fasta
-        )
-    ) {
-        error("Genome fasta file not specified with e.g. '--fasta genome.fa' or via a detectable config file. You must supply a genome FASTA file or use --skip_alignment and provide your own transcript fasta using --transcript_fasta for use in quantification.")
+    if (!params.fasta && !params.transcript_fasta) {
+        error("Genome fasta file not specified with e.g. '--fasta genome.fa' or via a detectable config file. You must supply a genome FASTA file or provide your own transcript fasta using --transcript_fasta for quantification.")
     }
 
     if (!params.gtf && !params.gff) {
@@ -211,80 +205,13 @@ def validateInputParameters() {
         error("Please provide either --bbsplit_fasta_list / --bbsplit_index to run BBSplit.")
     }
 
-    if (params.remove_ribo_rna && !params.ribo_database_manifest) {
-        error("Please provide --ribo_database_manifest to remove ribosomal RNA with SortMeRNA.")
-    }
 
-    if (params.with_umi && !params.skip_umi_extract) {
-        if (!params.umitools_bc_pattern && !params.umitools_bc_pattern2) {
-            error("UMI-tools requires a barcode pattern to extract barcodes from the reads.")
-        }
-    }
 
-    if (params.with_umi && params.umi_dedup_tool == "umicollapse" && params.umitools_grouping_method !in ['directional', 'adjacency', 'cluster']) {
-        error("UMI grouping method '${params.umitools_grouping_method}' unsupported for umicollapse, supported methods are 'cluster', 'adjacency' and 'directional'")
-    }
 
-    if (params.skip_alignment) {
-        skipAlignmentWarn()
-    }
 
-    if (!params.skip_pseudo_alignment && params.pseudo_aligner) {
-        if (!(params.salmon_index || params.transcript_fasta || (params.fasta && (params.gtf || params.gff)))) {
-            error("To use `--pseudo_aligner 'salmon'`, you must provide either --salmon_index or --transcript_fasta or both --fasta and --gtf / --gff.")
-        }
-    }
-
-    // Checks when running --aligner star_rsem
-    if (!params.skip_alignment && params.aligner == 'star_rsem') {
-        if (params.with_umi) {
-            rsemUmiError()
-        }
-        if (params.rsem_index && params.star_index) {
-            rsemStarIndexWarn()
-        }
-        if (params.aligner  == 'star_rsem' && params.extra_star_align_args) {
-            rsemStarExtraArgumentsWarn()
-        }
-    }
-
-    // Warn if --additional_fasta provided with aligner index
-    if (!params.skip_alignment && params.additional_fasta) {
-        def index = ''
-        if (params.aligner == 'star_salmon' && params.star_index) {
-            index = 'star'
-        }
-        if (params.aligner == 'star_rsem' && params.rsem_index) {
-            index = 'rsem'
-        }
-        if (params.aligner == 'hisat2' && params.hisat2_index) {
-            index = 'hisat2'
-        }
-        if (index) {
-            additionaFastaIndexWarn(index)
-        }
-    }
-
-    //General checks for if contaminant screening is used
-    if (params.contaminant_screening) {
-        if (params.aligner == 'star_rsem') {
-            error("Contaminant screening cannot be done with --aligner star_rsem since unaligned reads are not saved. Please use --aligner star_salmon or --aligner hisat2.")
-        }
-    }
-
-    // Check that Kraken/Bracken database provided if using kraken2/bracken
-    if (params.contaminant_screening in ['kraken2', 'kraken2_bracken']) {
-        if (!params.kraken_db) {
-            error("Contaminant screening set to kraken2 but not database is provided. Please provide a database with the --kraken_db option.")
-        }
-    // Check that Kraken/Bracken parameters are not provided when Kraken2 is not being used
-    } else {
-        if (!params.bracken_precision.equals('S')) {
-            brackenPrecisionWithoutKrakenDBWarn()
-        }
-
-        if (params.save_kraken_assignments || params.save_kraken_unassigned || params.kraken_db) {
-            krakenArgumentsWithoutKrakenDBWarn()
+    if (!params.skip_pseudo_alignment && params.pseudo_aligner == 'kallisto') {
+        if (!(params.transcript_fasta || (params.fasta && (params.gtf || params.gff)))) {
+            error("To use Kallisto pseudo-alignment, you must provide either --transcript_fasta or both --fasta and --gtf / --gff.")
         }
     }
 
@@ -295,13 +222,7 @@ def validateInputParameters() {
         error("Invalid option: ${params.rseqc_modules}. Valid options for '--rseqc_modules': ${valid_rseqc_modules.join(', ')}")
     }
 
-    // Check rRNA databases for sortmerna
-    if (params.remove_ribo_rna) {
-        def ch_ribo_db = file(params.ribo_database_manifest)
-        if (ch_ribo_db.isEmpty()) {
-            error("File provided with --ribo_database_manifest is empty: ${ch_ribo_db.getName()}!")
-        }
-    }
+
 
     // Check if file with list of fastas is provided when running BBSplit
     if (!params.skip_bbsplit && !params.bbsplit_index && params.bbsplit_fasta_list) {
@@ -437,28 +358,10 @@ def transcriptsFastaWarn() {
         "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 }
 
-//
-// Print a warning if --skip_alignment has been provided
-//
-def skipAlignmentWarn() {
-    log.warn "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-        "  '--skip_alignment' parameter has been provided.\n" +
-        "  Skipping alignment, genome-based quantification and all downstream QC processes.\n" +
-        "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-}
 
-//
-// Print a warning if using '--aligner star_rsem' and '--with_umi'
-//
-def rsemUmiError() {
-    def error_string = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-        "  When using '--aligner star_rsem', STAR is run by RSEM itself and so it is\n" +
-        "  not possible to remove UMIs before the quantification.\n\n" +
-        "  If you would like to remove UMI barcodes using the '--with_umi' option\n" +
-        "  please use either '--aligner star_salmon' or '--aligner hisat2'.\n" +
-        "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-    error(error_string)
-}
+
+
+
 
 //
 // Print a warning if using '--aligner star_rsem' and providing both '--rsem_index' and '--star_index'
@@ -474,18 +377,7 @@ def rsemStarIndexWarn() {
         "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 }
 
-//
-// Print a warning if using '--aligner star_rsem' and providing '--star_extra_alignment_args'
-//
-def rsemStarExtraArgumentsWarn() {
-    log.warn "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-        "  No additional arguments can be passed to STAR when using RSEM.\n" +
-        "  Because RSEM enforces its own parameters for STAR, any extra arguments\n" +
-        "  to STAR will be ignored. Alternatively, choose the STAR+Salmon route.\n\n" +
-        "  This warning has been generated because you have provided both\n" +
-        "  '--aligner star_rsem' and '--extra_star_align_args'.\n\n" +
-        "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-}
+
 
 //
 // Print a warning if using '--additional_fasta' and '--<ALIGNER>_index'
@@ -504,25 +396,7 @@ def additionaFastaIndexWarn(index) {
         "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 }
 
-//
-// Print a warning if --save_kraken_assignments or --save_kraken_unassigned is provided without --kraken_db
-//
-def krakenArgumentsWithoutKrakenDBWarn() {
-    log.warn "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-        "  'Kraken2 related arguments have been provided without setting contaminant\n" +
-        "  screening to Kraken2. Kraken2 is not being run so these will not be used.\n" +
-        "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-}
 
-///
-/// Print a warning if --bracken-precision is provided without --kraken_db
-///
-def brackenPrecisionWithoutKrakenDBWarn() {
-    log.warn "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-        "  '--bracken-precision' parameter has been provided without Kraken2 contaminant screening.\n" +
-        "  Bracken will not run so precision will not be set.\n" +
-        "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-}
 
 //
 // Function to generate an error if contigs in genome fasta file > 512 Mbp

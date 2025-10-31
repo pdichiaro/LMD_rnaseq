@@ -10,7 +10,10 @@
             "type": "object",
             "fa_icon": "fas fa-terminal",
             "description": "Define where the pipeline should find input data and save output data.",
-            "required": ["input", "outdir"],
+            "required": [
+                "input",
+                "outdir"
+            ],
             "properties": {
                 "input": {
                     "type": "string",
@@ -181,7 +184,9 @@
                     "default": "trimgalore",
                     "description": "Specifies the trimming tool to use.",
                     "fa_icon": "fas fa-cut",
-                    "enum": ["trimgalore"]
+                    "enum": [
+                        "trimgalore"
+                    ]
                 },
                 "extra_trimgalore_args": {
                     "type": "string",
@@ -218,28 +223,13 @@
                     "default": true,
                     "fa_icon": "fas fa-fast-forward",
                     "description": "Skip BBSplit for removal of non-reference genome reads."
-                },
-                "remove_ribo_rna": {
-                    "type": "boolean",
-                    "fa_icon": "fas fa-trash-alt",
-                    "description": "Enable the removal of reads derived from ribosomal RNA using SortMeRNA.",
-                    "help_text": "Any patterns found in sequences defined by the `--ribo_database_manifest` parameter will be used for filtering."
-                },
-                "ribo_database_manifest": {
-                    "type": "string",
-                    "format": "file-path",
-                    "exists": true,
-                    "mimetype": "text/plain",
-                    "default": "${projectDir}/workflows/assets/rrna-db-defaults.txt",
-                    "fa_icon": "fas fa-database",
-                    "description": "Text file containing paths to fasta files (one per line) that will be used to create the database for SortMeRNA."
                 }
             },
             "fa_icon": "fas fa-trash-alt"
         },
         "alignment_options": {
             "title": "Pseudo-alignment options",
-            "type": "object", 
+            "type": "object",
             "fa_icon": "fas fa-map-signs",
             "description": "Options to adjust parameters for Kallisto pseudo-alignment. Traditional alignment is disabled for LMD samples.",
             "properties": {
@@ -248,7 +238,9 @@
                     "default": "kallisto",
                     "description": "Pseudo-alignment algorithm optimized for LMD samples.",
                     "fa_icon": "fas fa-map-signs",
-                    "enum": ["kallisto"]
+                    "enum": [
+                        "kallisto"
+                    ]
                 },
                 "skip_pseudo_alignment": {
                     "type": "boolean",
@@ -256,7 +248,6 @@
                     "description": "Skip pseudo-alignment step.",
                     "fa_icon": "fas fa-forward"
                 },
-
                 "extra_kallisto_quant_args": {
                     "type": "string",
                     "minLength": 1,
@@ -294,18 +285,16 @@
                     "description": "Bin size for BigWig file creation.",
                     "fa_icon": "fas fa-chart-bar"
                 },
-                "skip_alignment": {
-                    "type": "boolean", 
-                    "default": true,
-                    "fa_icon": "fas fa-fast-forward",
-                    "description": "Skip traditional alignment (always true for LMD samples - uses pseudo-alignment only)."
-                },
+
                 "seq_mode": {
                     "type": "string",
                     "default": "SE",
                     "description": "Sequencing mode for LMD samples.",
                     "fa_icon": "fas fa-dna",
-                    "enum": ["SE", "PE"]
+                    "enum": [
+                        "SE",
+                        "PE"
+                    ]
                 }
             }
         },
@@ -378,22 +367,9 @@
         "disabled_features": {
             "title": "Disabled features (not used for LMD samples)",
             "type": "object",
-            "fa_icon": "fas fa-ban", 
+            "fa_icon": "fas fa-ban",
             "description": "Features disabled for LMD samples (UMI processing and rRNA removal not needed).",
-            "properties": {
-                "with_umi": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "UMI processing (disabled for LMD samples).",
-                    "fa_icon": "fas fa-ban"
-                },
-                "remove_ribo_rna": {
-                    "type": "boolean", 
-                    "default": false,
-                    "description": "Ribosomal RNA removal (disabled for LMD samples).",
-                    "fa_icon": "fas fa-ban"
-                }
-            }
+            "properties": {}
         },
         "institutional_config_options": {
             "title": "Institutional config options",
@@ -462,7 +438,14 @@
                     "description": "Method used to save pipeline results to output directory.",
                     "help_text": "Controls how files are saved to the output directory through Nextflow's `publishDir` directive. See the [Nextflow documentation](https://www.nextflow.io/docs/latest/process.html#publishdir) for available options.",
                     "fa_icon": "fas fa-copy",
-                    "enum": ["symlink", "rellink", "link", "copy", "copyNoFollow", "move"],
+                    "enum": [
+                        "symlink",
+                        "rellink",
+                        "link",
+                        "copy",
+                        "copyNoFollow",
+                        "move"
+                    ],
                     "hidden": true
                 },
                 "publish_dir_overwrite": {
@@ -574,7 +557,7 @@
             "$ref": "#/$defs/quality_control"
         },
         {
-            "$ref": "#/$defs/disabled_features"  
+            "$ref": "#/$defs/disabled_features"
         },
         {
             "$ref": "#/$defs/institutional_config_options"

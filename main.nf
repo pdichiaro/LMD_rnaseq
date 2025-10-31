@@ -55,8 +55,7 @@ workflow LMD_RNAseq {
         params.index,
         params.gencode,
         params.pseudo_aligner,
-        params.skip_gtf_filter,
-        params.skip_alignment
+        params.skip_gtf_filter
     )
     ch_versions = ch_versions.mix(PREPARE_GENOME.out.versions)
 

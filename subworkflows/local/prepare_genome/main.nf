@@ -21,7 +21,6 @@ workflow PREPARE_GENOME {
     gencode                 // boolean: whether the genome is from GENCODE
     pseudo_aligner          // string: Specifies the pseudo-alignment algorithm to use - available option is kallisto
     skip_gtf_filter         // boolean: Skip filtering of GTF for valid scaffolds and/ or transcript IDs
-    skip_alignment          // boolean: Skip traditional alignment (always true for LMDseq)
 
     main:
     ch_versions = Channel.empty()

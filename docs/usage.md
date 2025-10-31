@@ -197,13 +197,7 @@ nextflow run pdichiaro/LMDseq \
 | `--bin_size` | Integer | `1` | Bin size for coverage analysis |
 | `--chromosomes` | Path | `null` | Chromosome list file |
 
-### 🚫 Disabled Features (Not Used for LMD)
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `--with_umi` | Boolean | `false` | UMI processing (disabled for LMD samples) |
-| `--remove_ribo_rna` | Boolean | `false` | Ribosomal RNA removal (disabled for LMD samples) |
-| `--skip_alignment` | Boolean | `true` | Traditional alignment (disabled - uses pseudo-alignment only) |
 
 ### 📋 MultiQC Parameters
 
@@ -316,7 +310,6 @@ nextflow run pdichiaro/LMDseq \
 
 #### Process Skipping
 - `--skip_trimming`: Skip adapter trimming step
-- `--skip_alignment`: Skip alignment processes
 - `--skip_gtf_filter`: Skip GTF filtering (default: true)
 
 

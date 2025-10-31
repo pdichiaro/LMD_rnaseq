@@ -109,13 +109,7 @@ nextflow_function {
                 gff                    = "genome.gff"
                 transcript_fasta       = "transcripts.fasta"
                 skip_bbsplit           = true
-                bbsplit_fasta_list     = null
-                remove_ribo_rna        = false
-                ribo_database_manifest = null
-                with_umi               = false
-                skip_umi_extract       = false
-                skip_alignment         = false
-                aligner                = "star"
+                bbsplit_fasta_list     = null                aligner                = "star"
                 skip_pseudo_alignment  = false
                 pseudo_aligner         = "salmon"
                 rsem_index             = "rsem_index"

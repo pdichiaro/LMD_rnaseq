@@ -28,7 +28,7 @@ include { softwareVersionsToYAML           } from '../subworkflows/nf-core/utils
 include { checkSamplesAfterGrouping        } from '../subworkflows/local/utils_nfcore_rnaseq_pipeline'
 include { multiqcTsvFromList               } from '../subworkflows/local/utils_nfcore_rnaseq_pipeline'
 include { biotypeInGtf                     } from '../subworkflows/local/utils_nfcore_rnaseq_pipeline'
-include { getInferexperimentStrandedness   } from '../subworkflows/local/utils_nfcore_rnaseq_pipeline'
+
 include { methodsDescriptionText           } from '../subworkflows/local/utils_nfcore_rnaseq_pipeline'
 
 

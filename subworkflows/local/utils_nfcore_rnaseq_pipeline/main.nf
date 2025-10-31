@@ -16,7 +16,7 @@ include { imNotification            } from '../../nf-core/utils_nfcore_pipeline'
 include { UTILS_NFCORE_PIPELINE     } from '../../nf-core/utils_nfcore_pipeline'
 include { UTILS_NEXTFLOW_PIPELINE   } from '../../nf-core/utils_nextflow_pipeline'
 include { logColours                } from '../../nf-core/utils_nfcore_pipeline'
-// Moved calculateStrandedness function locally to avoid dependency on unused subworkflow
+
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -90,7 +90,7 @@ workflow PIPELINE_COMPLETION {
     multiqc_report  //  string: Path to MultiQC report
     trim_status        // map: pass/fail status per sample for trimming
     map_status         // map: pass/fail status per sample for mapping
-    strand_status      // map: pass/fail status per sample for strandedness check
+    strand_status      // map: pass/fail status per sample for strandedness check (unused in LMD pipeline)
 
     main:
     def pass_mapped_reads  = [:]
@@ -110,10 +110,7 @@ workflow PIPELINE_COMPLETION {
             id, status -> pass_mapped_reads[id] = status
         }
 
-    strand_status
-        .map{
-            id, status -> pass_strand_check[id] = status
-        }
+    // strand_status processing skipped - not used in LMD pipeline
 
     //
     // Completion email and summary
@@ -492,30 +489,7 @@ def rnaseqSummary(monochrome_logs=true, pass_mapped_reads=[:], pass_trimmed_read
     }
 }
 
-//
-// Function to determine library type by comparing type counts (moved from fastq_qc_trim_filter_setstrandedness)
-//
-def calculateStrandedness(forwardFragments, reverseFragments, unstrandedFragments, stranded_threshold = 0.8, unstranded_threshold = 0.1) {
-    def totalFragments = forwardFragments + reverseFragments + unstrandedFragments
-    def totalStrandedFragments = forwardFragments + reverseFragments
 
-    def strandedness = 'undetermined'
-    if (totalStrandedFragments > 0) {
-        def forwardProportion = forwardFragments / (totalStrandedFragments as double)
-        def reverseProportion = reverseFragments / (totalStrandedFragments as double)
-        def proportionDifference = Math.abs(forwardProportion - reverseProportion)
-
-        if (forwardProportion >= stranded_threshold) {
-            strandedness = 'forward'
-        } else if (reverseProportion >= stranded_threshold) {
-            strandedness = 'reverse'
-        } else if (proportionDifference <= unstranded_threshold) {
-            strandedness = 'unstranded'
-        }
-    }
-    
-    return strandedness
-}
 
 //
 // Create MultiQC tsv custom content from a list of values (moved from fastq_qc_trim_filter_setstrandedness)

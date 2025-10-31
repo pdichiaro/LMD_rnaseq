@@ -129,14 +129,7 @@
                     "description": "Optional path to gene annotation reference file for enriched matrix output.",
                     "help_text": "OPTIONAL: Provides gene symbols, names, coordinates, and database cross-references. Without this file, a clean minimal matrix (gene_id + counts) is generated. With this file, a comprehensive annotated matrix is produced. Choose based on your analysis needs."
                 },
-                "chromosomes": {
-                    "type": "string",
-                    "format": "file-path",
-                    "exists": true,
-                    "mimetype": "text/plain",
-                    "fa_icon": "fas fa-list",
-                    "description": "Path to chromosome names file."
-                },
+
                 "gencode": {
                     "type": "boolean",
                     "fa_icon": "fas fa-code-branch",

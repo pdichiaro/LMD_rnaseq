@@ -66,7 +66,8 @@ workflow LMD_RNAseq {
         PREPARE_GENOME.out.fasta,
         PREPARE_GENOME.out.gtf,
         PREPARE_GENOME.out.transcript_fasta,
-        PREPARE_GENOME.out.index
+        PREPARE_GENOME.out.index,
+        PREPARE_GENOME.out.chrom_sizes
     )
     ch_versions = ch_versions.mix(RNASEQ.out.versions)
 

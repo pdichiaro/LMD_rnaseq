@@ -59,6 +59,7 @@ workflow RNASEQ {
     ch_gtf                  // channel: path(gtf)
     ch_transcript_fasta     // channel: path(transcript.fasta)
     ch_index                // channel: [ meta, path(kallisto/index/) ]
+    ch_chrom_sizes          // channel: path(genome.chrom.sizes)
 
     main:
     ch_multiqc_files = Channel.empty()
@@ -137,13 +138,12 @@ workflow RNASEQ {
     // -----------------------
     // Run Subworkflow: Alignment with KALLISTO, generate pseudo-bam, raw count matrix, and DESeq2 normalization/QC
     // -----------------------
-    ch_chromosomes = params.chromosomes ? Channel.fromPath(params.chromosomes) : Channel.empty()        
     if (params.pseudo_aligner == 'kallisto') {
         KALLISTO(
             ch_trimmed_reads,
             ch_index,
             ch_gtf,
-            ch_chromosomes,
+            ch_chrom_sizes,
             params.kallisto_quant_fraglen,
             params.kallisto_quant_fraglen_sd,
             params.bin_size,

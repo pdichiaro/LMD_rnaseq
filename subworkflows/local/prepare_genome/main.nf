@@ -9,6 +9,7 @@ include { KALLISTO_INDEX }                    from '../../../modules/local/kalli
 include { UNTAR as UNTAR_KALLISTO_INDEX }     from '../../../modules/nf-core/untar'
 include { PREPROCESS_TRANSCRIPTS_FASTA_GENCODE } from '../../../modules/local/preprocess_transcripts_fasta_gencode'
 include { RSEM_PREPAREREFERENCE as MAKE_TRANSCRIPTS_FASTA } from '../../../modules/nf-core/rsem/preparereference'
+include { CUSTOM_GETCHROMSIZES }              from '../../../modules/local/custom_getchromsizes'
 
 workflow PREPARE_GENOME {
 
@@ -45,6 +46,15 @@ workflow PREPARE_GENOME {
             ? GUNZIP_FASTA([ [:], file(fasta, checkIfExists: true) ]).gunzip.map { it[1] } 
             : Channel.value(file(fasta, checkIfExists: true)))
         : Channel.empty()
+
+    // Generate chromosome sizes from FASTA (needed for Kallisto)
+    ch_chrom_sizes = Channel.empty()
+    if (fasta_provided) {
+        ch_fasta_meta = ch_fasta.map { [ [:], it ] }
+        CUSTOM_GETCHROMSIZES(ch_fasta_meta)
+        ch_chrom_sizes = CUSTOM_GETCHROMSIZES.out.sizes.map { it[1] }
+        ch_versions = ch_versions.mix(CUSTOM_GETCHROMSIZES.out.versions)
+    }
 
     // Filter GTF if needed
     def filter_gtf_needed = (
@@ -95,5 +105,6 @@ workflow PREPARE_GENOME {
     gtf              = ch_gtf
     transcript_fasta = ch_transcript_fasta
     index            = ch_index
+    chrom_sizes      = ch_chrom_sizes
     versions         = ch_versions.ifEmpty(null)
 }
